@@ -234,16 +234,12 @@
     <label class="filter-chip" id="chip-open"><input type="checkbox" id="filter-open" onchange="applyFiltersAndSort()">✅ Open now</label>
     <label class="filter-chip" id="chip-alcohol"><input type="checkbox" id="filter-alcohol" onchange="applyFiltersAndSort()">🍷 Alcohol</label>
     <label class="filter-chip" id="chip-bar"><input type="checkbox" id="filter-bar" onchange="applyFiltersAndSort()">🍺 Bar</label>
-    <label class="filter-chip" id="chip-reservations"><input type="checkbox" id="filter-reservations" onchange="applyFiltersAndSort()">📅 Reservations</label>
     <label class="filter-chip" id="chip-vegan"><input type="checkbox" id="filter-vegan" onchange="applyFiltersAndSort()">🌱 Vegan</label>
     <label class="filter-chip" id="chip-vegetarian"><input type="checkbox" id="filter-vegetarian" onchange="applyFiltersAndSort()">🥦 Vegetarian</label>
     <label class="filter-chip" id="chip-outdoor"><input type="checkbox" id="filter-outdoor" onchange="applyFiltersAndSort()">🌿 Outdoor seating</label>
     <label class="filter-chip" id="chip-delivery"><input type="checkbox" id="filter-delivery" onchange="applyFiltersAndSort()">🛵 Delivery</label>
     <label class="filter-chip" id="chip-takeaway"><input type="checkbox" id="filter-takeaway" onchange="applyFiltersAndSort()">🥡 Takeaway</label>
-    <label class="filter-chip" id="chip-wifi"><input type="checkbox" id="filter-wifi" onchange="applyFiltersAndSort()">📶 WiFi</label>
-    <label class="filter-chip" id="chip-parking"><input type="checkbox" id="filter-parking" onchange="applyFiltersAndSort()">🅿️ Parking</label>
-    <label class="filter-chip" id="chip-live"><input type="checkbox" id="filter-live" onchange="applyFiltersAndSort()">🎵 Live music</label>
-    <label class="filter-chip" id="chip-gluten"><input type="checkbox" id="filter-gluten" onchange="applyFiltersAndSort()">🌾 Gluten-free</label>
+    <span style="font-size:11px;color:var(--muted);align-self:center;padding-left:4px">Filters show places where OSM has that info</span>
   </div>
 </div>
 
@@ -617,16 +613,11 @@ function getFilters() {
     open:         document.getElementById('filter-open').checked,
     alcohol:      document.getElementById('filter-alcohol').checked,
     bar:          document.getElementById('filter-bar').checked,
-    reservations: document.getElementById('filter-reservations').checked,
     vegan:        document.getElementById('filter-vegan').checked,
     vegetarian:   document.getElementById('filter-vegetarian').checked,
     outdoor:      document.getElementById('filter-outdoor').checked,
     delivery:     document.getElementById('filter-delivery').checked,
     takeaway:     document.getElementById('filter-takeaway').checked,
-    wifi:         document.getElementById('filter-wifi').checked,
-    parking:      document.getElementById('filter-parking').checked,
-    live:         document.getElementById('filter-live').checked,
-    gluten:       document.getElementById('filter-gluten').checked,
   };
 }
 
@@ -645,19 +636,14 @@ function applyFiltersAndSort() {
     const food = feat.food_and_drink || {};
     const svc  = feat.services || {};
     const am   = feat.amenities || {};
-    if (f.open         && !isOpen(p))                          return false;
+    if (f.open         && isOpen(p) !== true)                  return false;
     if (f.alcohol      && !food.alcohol)                       return false;
     if (f.bar          && !food.bar)                           return false;
-    if (f.reservations && !svc.dine_in?.reservations)          return false;
     if (f.vegan        && !food.menus?.has_vegan)              return false;
     if (f.vegetarian   && !food.menus?.has_vegetarian)         return false;
     if (f.outdoor      && !am.outdoor_seating)                 return false;
     if (f.delivery     && !svc.delivery)                       return false;
     if (f.takeaway     && !svc.takeout)                        return false;
-    if (f.wifi         && !am.wifi)                            return false;
-    if (f.parking      && !am.parking?.parking_available)      return false;
-    if (f.live         && !am.live_music)                      return false;
-    if (f.gluten       && !food.menus?.has_gluten_free)        return false;
     return true;
   });
 
@@ -672,7 +658,7 @@ function applyFiltersAndSort() {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
-function isOpen(p) { return p.hours?.open_now === true; }
+function isOpen(p) { return p.hours?.open_now ?? null; } // true=open, false=closed, null=unknown
 
 function fmtDist(m) {
   if (m == null) return '';
@@ -722,8 +708,8 @@ function renderResults(places) {
 
     // Build tags
     const tags = [];
-    if (isOpen(p))                       tags.push(['tag-open',       '✅ Open now']);
-    else if (p.hours)                    tags.push(['tag-closed',     '🔴 Closed']);
+    if (isOpen(p) === true)              tags.push(['tag-open',       '✅ Open now']);
+    else if (isOpen(p) === false)        tags.push(['tag-closed',     '🔴 Closed']);
     const pr = priceStr(p.price);
     if (pr)                              tags.push(['tag-price',      pr]);
     if (food.alcohol)                    tags.push(['tag-alcohol',    '🍷 Alcohol']);
@@ -742,11 +728,7 @@ function renderResults(places) {
     const r = p.rating;
     const ratingHTML = r
       ? `<span class="card-rating ${ratingCls(r)}">★ ${r.toFixed(1)}</span>`
-      : p.hours?.open_now === true
-        ? `<span class="card-rating high" style="background:var(--good)">✅ Open</span>`
-        : p.hours?.open_now === false
-          ? `<span class="card-rating low" style="background:var(--muted)">Closed</span>`
-          : `<span class="card-rating none"></span>`;
+      : ``;
 
     const cat = p.categories?.[0]?.name || '';
     const addr = fmtAddr(p.location);
