@@ -847,62 +847,63 @@ function useGPS() {
 function buildOverpassQuery(lat, lng, radius, catValue) {
   const cfg = TAB_CONFIG[currentTab];
   const catValues = catValue ? catValue.split(';').map(s => s.trim()) : [];
+  // Clamp radius for broad (no category) searches to avoid 504 timeouts
+  const broadRadius = Math.min(parseInt(radius), 5000);
 
   if (currentTab === 'food') {
     const amenityFilter = cfg.amenityTypes.join('|');
     if (catValues.length && !catValues.includes('restaurant') && !catValues.includes('cafe') && !catValues.includes('bar') && !catValues.includes('pub') && !catValues.includes('fast_food')) {
       // cuisine-based search
-      return `[out:json][timeout:25];\n(\n` +
+      return `[out:json][timeout:60];\n(\n` +
         catValues.map(c =>
           `node["amenity"~"${amenityFilter}"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});\n` +
           `way["amenity"~"${amenityFilter}"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});`
         ).join('\n') +
-        `\n);\nout body center 50;`;
+        `\n);\nout body center 30;`;
     } else if (catValues.length) {
       const af = catValues.join('|');
-      return `[out:json][timeout:25];\n(\nnode["amenity"~"${af}"](around:${radius},${lat},${lng});\nway["amenity"~"${af}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      return `[out:json][timeout:60];\n(\nnode["amenity"~"${af}"](around:${radius},${lat},${lng});\nway["amenity"~"${af}"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
     } else {
-      return `[out:json][timeout:25];\n(\nnode["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\nway["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      // Broad search — cap radius to avoid 504
+      return `[out:json][timeout:60];\n(\nnode["amenity"~"${amenityFilter}"](around:${broadRadius},${lat},${lng});\nway["amenity"~"${amenityFilter}"](around:${broadRadius},${lat},${lng});\n);\nout body center 30;`;
     }
   }
 
   if (currentTab === 'stays') {
     if (catValues.length) {
       const af = catValues.join('|');
-      return `[out:json][timeout:25];\n(\nnode["tourism"~"${af}"](around:${radius},${lat},${lng});\nway["tourism"~"${af}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      return `[out:json][timeout:60];\n(\nnode["tourism"~"${af}"](around:${radius},${lat},${lng});\nway["tourism"~"${af}"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
     }
     const tf = cfg.amenityTypes.join('|');
-    return `[out:json][timeout:25];\n(\nnode["tourism"~"${tf}"](around:${radius},${lat},${lng});\nway["tourism"~"${tf}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+    return `[out:json][timeout:60];\n(\nnode["tourism"~"${tf}"](around:${broadRadius},${lat},${lng});\nway["tourism"~"${tf}"](around:${broadRadius},${lat},${lng});\n);\nout body center 30;`;
   }
 
   if (currentTab === 'rec') {
-    const recAmenities = ['swimming_pool','sports_centre','golf_course','tennis','skatepark','playground','cinema','theatre','museum','arts_centre'];
-    const recTourism   = ['viewpoint','picnic_site','theme_park'];
-    const recLeisure   = ['park','garden','stadium','swimming_area','pitch','track','fitness_centre','nature_reserve'];
-    const recNatural   = ['beach','cliff','peak','cave_entrance'];
+    const recAmenities = ['swimming_pool','sports_centre','golf_course','skatepark','playground','cinema','theatre','museum','arts_centre'];
+    const recTourism   = ['viewpoint','picnic_site'];
+    const recLeisure   = ['park','garden','swimming_area','fitness_centre','nature_reserve'];
+    const recNatural   = ['beach'];
 
     if (catValues.length) {
       const c = catValues[0];
-      if (c === 'park')          return `[out:json][timeout:25];\n(\nnode["leisure"~"park|garden|nature_reserve"](around:${radius},${lat},${lng});\nway["leisure"~"park|garden|nature_reserve"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'hiking')        return `[out:json][timeout:25];\n(\nway["highway"="path"]["sac_scale"](around:${radius},${lat},${lng});\nway["route"="hiking"](around:${radius},${lat},${lng});\nnode["tourism"="viewpoint"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'swimming')      return `[out:json][timeout:25];\n(\nnode["amenity"="swimming_pool"](around:${radius},${lat},${lng});\nway["amenity"="swimming_pool"](around:${radius},${lat},${lng});\nnode["leisure"="swimming_area"](around:${radius},${lat},${lng});\nway["leisure"="swimming_area"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'beach')         return `[out:json][timeout:25];\n(\nnode["natural"="beach"](around:${radius},${lat},${lng});\nway["natural"="beach"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'sports_centre') return `[out:json][timeout:25];\n(\nnode["amenity"="sports_centre"](around:${radius},${lat},${lng});\nway["amenity"="sports_centre"](around:${radius},${lat},${lng});\nnode["leisure"~"fitness_centre|stadium|pitch"](around:${radius},${lat},${lng});\nway["leisure"~"fitness_centre|stadium|pitch"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'golf_course')   return `[out:json][timeout:25];\n(\nnode["leisure"="golf_course"](around:${radius},${lat},${lng});\nway["leisure"="golf_course"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'tennis')        return `[out:json][timeout:25];\n(\nnode["sport"="tennis"](around:${radius},${lat},${lng});\nway["sport"="tennis"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'skatepark')     return `[out:json][timeout:25];\n(\nnode["leisure"="skatepark"](around:${radius},${lat},${lng});\nway["leisure"="skatepark"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'playground')    return `[out:json][timeout:25];\n(\nnode["leisure"="playground"](around:${radius},${lat},${lng});\nway["leisure"="playground"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'museum')        return `[out:json][timeout:25];\n(\nnode["tourism"~"museum|gallery|artwork"](around:${radius},${lat},${lng});\nway["tourism"~"museum|gallery|artwork"](around:${radius},${lat},${lng});\nnode["amenity"~"cinema|theatre|arts_centre"](around:${radius},${lat},${lng});\nway["amenity"~"cinema|theatre|arts_centre"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'viewpoint')     return `[out:json][timeout:25];\n(\nnode["tourism"="viewpoint"](around:${radius},${lat},${lng});\nway["tourism"="viewpoint"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
-      if (c === 'cinema')        return `[out:json][timeout:25];\n(\nnode["amenity"="cinema"](around:${radius},${lat},${lng});\nway["amenity"="cinema"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'park')          return `[out:json][timeout:60];\n(\nnode["leisure"~"park|garden|nature_reserve"](around:${radius},${lat},${lng});\nway["leisure"~"park|garden|nature_reserve"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'hiking')        return `[out:json][timeout:60];\n(\nnode["tourism"="viewpoint"](around:${radius},${lat},${lng});\nway["tourism"="viewpoint"](around:${radius},${lat},${lng});\nnode["leisure"="nature_reserve"](around:${radius},${lat},${lng});\nway["leisure"="nature_reserve"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'swimming')      return `[out:json][timeout:60];\n(\nnode["amenity"="swimming_pool"](around:${radius},${lat},${lng});\nway["amenity"="swimming_pool"](around:${radius},${lat},${lng});\nnode["leisure"="swimming_area"](around:${radius},${lat},${lng});\nway["leisure"="swimming_area"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'beach')         return `[out:json][timeout:60];\n(\nnode["natural"="beach"](around:${radius},${lat},${lng});\nway["natural"="beach"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'sports_centre') return `[out:json][timeout:60];\n(\nnode["amenity"="sports_centre"](around:${radius},${lat},${lng});\nway["amenity"="sports_centre"](around:${radius},${lat},${lng});\nnode["leisure"="fitness_centre"](around:${radius},${lat},${lng});\nway["leisure"="fitness_centre"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'golf_course')   return `[out:json][timeout:60];\n(\nnode["leisure"="golf_course"](around:${radius},${lat},${lng});\nway["leisure"="golf_course"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'tennis')        return `[out:json][timeout:60];\n(\nnode["sport"="tennis"](around:${radius},${lat},${lng});\nway["sport"="tennis"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'skatepark')     return `[out:json][timeout:60];\n(\nnode["leisure"="skatepark"](around:${radius},${lat},${lng});\nway["leisure"="skatepark"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'playground')    return `[out:json][timeout:60];\n(\nnode["leisure"="playground"](around:${radius},${lat},${lng});\nway["leisure"="playground"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'museum')        return `[out:json][timeout:60];\n(\nnode["tourism"~"museum|gallery"](around:${radius},${lat},${lng});\nway["tourism"~"museum|gallery"](around:${radius},${lat},${lng});\nnode["amenity"~"cinema|theatre|arts_centre"](around:${radius},${lat},${lng});\nway["amenity"~"cinema|theatre|arts_centre"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'viewpoint')     return `[out:json][timeout:60];\n(\nnode["tourism"="viewpoint"](around:${radius},${lat},${lng});\nway["tourism"="viewpoint"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
+      if (c === 'cinema')        return `[out:json][timeout:60];\n(\nnode["amenity"="cinema"](around:${radius},${lat},${lng});\nway["amenity"="cinema"](around:${radius},${lat},${lng});\n);\nout body center 30;`;
     }
 
-    // Default: all rec
+    // Default broad rec — split into two leaner queries via broadRadius
     const aF = recAmenities.join('|');
-    const tF = recTourism.join('|');
     const lF = recLeisure.join('|');
-    const nF = recNatural.join('|');
-    return `[out:json][timeout:25];\n(\nnode["amenity"~"${aF}"](around:${radius},${lat},${lng});\nway["amenity"~"${aF}"](around:${radius},${lat},${lng});\nnode["tourism"~"${tF}"](around:${radius},${lat},${lng});\nway["tourism"~"${tF}"](around:${radius},${lat},${lng});\nnode["leisure"~"${lF}"](around:${radius},${lat},${lng});\nway["leisure"~"${lF}"](around:${radius},${lat},${lng});\nnode["natural"~"${nF}"](around:${radius},${lat},${lng});\nway["natural"~"${nF}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+    return `[out:json][timeout:60];\n(\nnode["amenity"~"${aF}"](around:${broadRadius},${lat},${lng});\nway["amenity"~"${aF}"](around:${broadRadius},${lat},${lng});\nnode["leisure"~"${lF}"](around:${broadRadius},${lat},${lng});\nway["leisure"~"${lF}"](around:${broadRadius},${lat},${lng});\nnode["natural"="beach"](around:${broadRadius},${lat},${lng});\nway["natural"="beach"](around:${broadRadius},${lat},${lng});\nnode["tourism"="viewpoint"](around:${broadRadius},${lat},${lng});\n);\nout body center 30;`;
   }
 }
 
@@ -916,8 +917,21 @@ async function doSearchWithCoords(lat, lng, label) {
   const query    = buildOverpassQuery(lat, lng, radius, catValue);
 
   try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
-    if (!res.ok) throw new Error(`Overpass error ${res.status}`);
+    const mirrors = [
+      'https://overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter',
+    ];
+    let res = null;
+    for (const mirror of mirrors) {
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 28000);
+        res = await fetch(mirror, { method: 'POST', body: query, signal: controller.signal });
+        clearTimeout(tid);
+        if (res.ok) break;
+      } catch(e) { res = null; }
+    }
+    if (!res || !res.ok) throw new Error('Both Overpass servers timed out — try a smaller radius or pick a specific category');
     const data = await res.json();
     const elements = data.elements || [];
 
@@ -929,7 +943,10 @@ async function doSearchWithCoords(lat, lng, label) {
     if (!allResults.length) showEmpty();
     else applyFiltersAndSort();
   } catch(e) {
-    showError(`Could not load results: ${e.message}`);
+    const msg = e.message.includes('timeout') || e.message.includes('504') || e.message.includes('AbortError')
+      ? 'Search timed out. Try picking a specific category (e.g. Restaurant, Café) or reducing the radius.'
+      : `Could not load results: ${e.message}`;
+    showError(msg);
   }
   setLoading(false);
 }
