@@ -1,226 +1,505 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NZ Eats — Restaurant Finder</title>
+<title>NZ Explorer — Food, Stays & Activities</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --ink: #1a1410; --paper: #faf7f2; --warm: #f2ece0;
-    --border: #e0d8cc; --muted: #9a8f82; --accent: #c0392b;
-    --accent2: #e67e22; --good: #27ae60; --surface: #fff; --r: 10px;
-  }
-  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
 
-  header { background: var(--ink); color: var(--paper); padding: 2rem 1.5rem 1.5rem; text-align: center; }
-  header h1 { font-family: 'DM Serif Display', serif; font-size: 2.8rem; letter-spacing: -0.02em; }
-  header h1 em { font-style: italic; color: var(--accent2); }
-  header p { margin-top: 0.4rem; color: #a09080; font-size: 0.9rem; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .search-panel {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  }
-  .search-row { max-width: 920px; margin: 0 auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
-  .field input, .field select {
-    background: var(--warm); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 14px;
-    color: var(--ink); outline: none; transition: border-color 0.2s; appearance: none;
-  }
-  .field input:focus, .field select:focus { border-color: var(--accent); }
-  .field input::placeholder { color: var(--muted); }
-  .field-location { flex: 2; min-width: 200px; position: relative; }
-  .field-radius { flex: 0 0 110px; }
-  .field-cuisine { flex: 1; min-width: 130px; }
-  .field-sort { flex: 1; min-width: 130px; }
+:root {
+  --bg:       #f8f6f2;
+  --surface:  #ffffff;
+  --surface2: #f2ede6;
+  --border:   #e4ddd4;
+  --ink:      #1c1712;
+  --ink2:     #6b6157;
+  --muted:    #9e9389;
+  --accent:   #d4541a;
+  --accent-h: #b8431300;
+  --good:     #1a9e5f;
+  --warn:     #c0a020;
+  --bad:      #c03030;
+  --r:        12px;
+  --shadow:   0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.12);
+  --tab-food:    #d4541a;
+  --tab-stays:   #1a6fa0;
+  --tab-rec:     #1a9e5f;
+  --transition: 0.2s ease;
+}
 
-  .suggestions {
-    display: none; position: absolute; top: 100%; left: 0; right: 0;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r); box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-    z-index: 999; margin-top: 4px; overflow: hidden;
-  }
-  .suggestion-item {
-    padding: 10px 14px; font-size: 14px; cursor: pointer;
-    border-bottom: 1px solid var(--border); transition: background 0.1s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .suggestion-item:last-child { border-bottom: none; }
-  .suggestion-item:hover { background: var(--warm); }
-  .suggestion-item .s-icon { color: var(--muted); font-size: 12px; }
+[data-theme="dark"] {
+  --bg:       #111009;
+  --surface:  #1e1b16;
+  --surface2: #28241d;
+  --border:   #38322a;
+  --ink:      #f0ebe3;
+  --ink2:     #b0a898;
+  --muted:    #7a7068;
+  --accent:   #e8662a;
+  --good:     #2ec87a;
+  --warn:     #e0c040;
+  --bad:      #e05050;
+  --shadow:   0 2px 12px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.5);
+}
 
-  .btn-search {
-    background: var(--accent); color: white; border: none; border-radius: var(--r);
-    padding: 9px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px;
-    font-weight: 600; cursor: pointer; white-space: nowrap; align-self: flex-end;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .btn-search:hover { background: #a93226; }
-  .btn-search:active { transform: scale(0.97); }
-  .btn-search:disabled { opacity: 0.45; cursor: not-allowed; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+}
 
-  .btn-locate {
-    background: var(--warm); color: var(--ink); border: 1px solid var(--border);
-    border-radius: var(--r); padding: 9px 14px; font-family: 'DM Sans', sans-serif;
-    font-size: 14px; cursor: pointer; white-space: nowrap; align-self: flex-end;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .btn-locate:hover { border-color: var(--accent); background: #fde8e6; }
-  .btn-locate.loading-gps { opacity: 0.6; cursor: not-allowed; }
+/* ── HEADER ── */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: var(--shadow);
+  transition: background var(--transition), border-color var(--transition);
+}
+.header-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; gap: 1rem;
+  height: 60px;
+}
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700;
+  color: var(--ink); white-space: nowrap;
+  letter-spacing: -0.02em;
+}
+.logo span { color: var(--accent); font-style: italic; }
 
-  .filters-bar { max-width: 920px; margin: 0.75rem auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
-  .filter-chip {
-    display: flex; align-items: center; gap: 5px; background: var(--warm);
-    border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px;
-    font-size: 12px; cursor: pointer; transition: all 0.15s; user-select: none; color: var(--muted);
-  }
-  .filter-chip input[type=checkbox] { display: none; }
-  .filter-chip.active { background: var(--ink); border-color: var(--ink); color: white; }
-  .filter-chip:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+/* ── TAB BAR ── */
+.tab-bar {
+  display: flex; gap: 4px;
+  background: var(--surface2);
+  border-radius: 10px; padding: 4px;
+  flex: 1; max-width: 420px;
+}
+.tab-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 7px 10px; border-radius: 7px; border: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+  background: transparent; color: var(--muted);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.tab-btn .tab-emoji { font-size: 15px; }
+.tab-btn.active {
+  color: white; box-shadow: var(--shadow);
+}
+.tab-btn[data-tab="food"].active   { background: var(--tab-food); }
+.tab-btn[data-tab="stays"].active  { background: var(--tab-stays); }
+.tab-btn[data-tab="rec"].active    { background: var(--tab-rec); }
+.tab-btn:hover:not(.active) { background: var(--border); color: var(--ink); }
 
-  .main { max-width: 920px; margin: 0 auto; padding: 1.5rem; }
+.header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 
-  .error-msg {
-    background: #fdecea; border: 1px solid #f5c2c0; border-radius: var(--r);
-    padding: 1rem 1.25rem; color: #c0392b; font-size: 14px; display: none; margin-bottom: 1rem;
-  }
-  .error-msg.visible { display: block; }
+.btn-dark {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; cursor: pointer;
+  font-size: 16px; color: var(--ink2); transition: all var(--transition);
+  line-height: 1;
+}
+.btn-dark:hover { background: var(--border); }
 
-  .loading { display: none; text-align: center; padding: 4rem 0; color: var(--muted); }
-  .loading.visible { display: block; }
-  .loading-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 1rem; }
-  .loading-dots span {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
-    animation: bounce 1s ease-in-out infinite;
-  }
-  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
-  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes bounce { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-8px); opacity: 1; } }
+/* ── HERO ── */
+.hero {
+  padding: 3rem 1.5rem 2rem;
+  text-align: center;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.hero h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700; letter-spacing: -0.02em;
+  line-height: 1.15; margin-bottom: 0.5rem;
+}
+.hero h2 em { font-style: italic; color: var(--accent); }
+.hero p { color: var(--ink2); font-size: 1rem; margin-bottom: 1.75rem; }
 
-  .empty { display: none; text-align: center; padding: 3rem 0; color: var(--muted); }
-  .empty.visible { display: block; }
-  .empty h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--ink); margin: 0.5rem 0; }
+/* ── CATEGORY CARDS ── */
+.category-cards {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.cat-card {
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: 16px; padding: 1.1rem 1.5rem;
+  cursor: pointer; transition: all var(--transition);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  min-width: 130px; flex: 1; max-width: 200px;
+  text-decoration: none; color: inherit;
+}
+.cat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.cat-card.active-food   { border-color: var(--tab-food);  background: #fff3ee; }
+.cat-card.active-stays  { border-color: var(--tab-stays); background: #eef5ff; }
+.cat-card.active-rec    { border-color: var(--tab-rec);   background: #eefff5; }
+[data-theme="dark"] .cat-card.active-food  { background: #2a1810; }
+[data-theme="dark"] .cat-card.active-stays { background: #101e2a; }
+[data-theme="dark"] .cat-card.active-rec   { background: #102a1a; }
+.cat-card-thumb {
+  font-size: 2.2rem; line-height: 1;
+}
+.cat-card-label {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+.cat-card-sub {
+  font-size: 11px; color: var(--muted); text-align: center;
+}
 
-  .hero-empty { text-align: center; padding: 4rem 1rem; }
-  .hero-empty h2 { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 0.5rem; }
-  .hero-empty p { color: var(--muted); }
-  .hero-suggestions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
-  .hero-chip {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
-    padding: 7px 16px; font-size: 14px; cursor: pointer; transition: all 0.15s;
-  }
-  .hero-chip:hover { border-color: var(--accent); color: var(--accent); }
+/* ── SEARCH AREA ── */
+.search-area {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.5rem;
+  position: sticky; top: 60px; z-index: 150;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background var(--transition);
+}
+.search-row {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+  font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+}
+.field input, .field select {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 9px 12px;
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  color: var(--ink); outline: none;
+  transition: border-color var(--transition), background var(--transition);
+  appearance: none;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--muted); }
+.field-location { flex: 2; min-width: 180px; position: relative; }
+.field-radius   { flex: 0 0 105px; }
+.field-cat      { flex: 1; min-width: 120px; }
+.field-sort     { flex: 1; min-width: 115px; }
 
-  .status-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
-  .status-bar .count { font-size: 14px; color: var(--muted); }
-  .status-bar .count strong { color: var(--ink); }
+.suggestions {
+  display: none; position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--shadow-lg);
+  z-index: 999; margin-top: 4px; overflow: hidden;
+}
+.suggestion-item {
+  padding: 10px 14px; font-size: 14px; cursor: pointer;
+  border-bottom: 1px solid var(--border); transition: background 0.1s;
+  display: flex; align-items: center; gap: 8px; color: var(--ink);
+}
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover { background: var(--surface2); }
 
-  .restaurant-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
-    padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: flex-start;
-    transition: box-shadow 0.15s, transform 0.15s; margin-bottom: 8px;
-    cursor: pointer; text-decoration: none; color: inherit;
-  }
-  .restaurant-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+.btn-search {
+  background: var(--accent); color: white; border: none; border-radius: 9px;
+  padding: 9px 22px; font-family: 'Inter', sans-serif; font-size: 14px;
+  font-weight: 600; cursor: pointer; white-space: nowrap; align-self: flex-end;
+  transition: filter var(--transition), transform 0.1s;
+}
+.btn-search:hover  { filter: brightness(1.1); }
+.btn-search:active { transform: scale(0.97); }
+.btn-search:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .card-rank { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--border); min-width: 26px; line-height: 1; padding-top: 3px; }
-  .card-body { flex: 1; min-width: 0; }
-  .card-top { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
-  .card-name { font-family: 'DM Serif Display', serif; font-size: 1.1rem; line-height: 1.25; }
-  .card-rating {
-    display: flex; align-items: center; gap: 3px; padding: 2px 8px;
-    border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
-  }
-  .card-rating.high { background: var(--good); color: white; }
-  .card-rating.mid { background: var(--accent2); color: white; }
-  .card-rating.low { background: var(--muted); color: white; }
-  .card-rating.none { background: var(--border); color: var(--muted); }
-  .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; font-size: 13px; color: var(--muted); }
-  .card-meta .sep { color: var(--border); }
-  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
-  .tag { border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 500; border: 1px solid; }
-  .tag-open       { background:#e3f2fd; color:#1565c0; border-color:#90caf9; }
-  .tag-closed     { background:#fdecea; color:#c0392b; border-color:#f5c2c0; }
-  .tag-price      { background:var(--warm); color:var(--ink); border-color:var(--border); }
-  .tag-alcohol    { background:#fff3e0; color:#e67e22; border-color:#f0c080; }
-  .tag-bar        { background:#f3e5f5; color:#8e44ad; border-color:#d7b8e8; }
-  .tag-reserve    { background:#e8f5e9; color:#27ae60; border-color:#a8d8b0; }
-  .tag-vegan      { background:#e8f5e9; color:#2e7d32; border-color:#a8d8b0; }
-  .tag-vegetarian { background:#f1f8e9; color:#558b2f; border-color:#c5e1a5; }
-  .tag-outdoor    { background:#e0f7fa; color:#00838f; border-color:#80deea; }
-  .tag-delivery   { background:#fce4ec; color:#c2185b; border-color:#f48fb1; }
-  .tag-takeaway   { background:#fff8e1; color:#f57f17; border-color:#ffe082; }
-  .tag-wifi       { background:#e8eaf6; color:#3949ab; border-color:#9fa8da; }
-  .tag-parking    { background:#efebe9; color:#5d4037; border-color:#bcaaa4; }
-  .tag-live       { background:#fce4ec; color:#ad1457; border-color:#f48fb1; }
-  .tag-gluten     { background:#f9fbe7; color:#827717; border-color:#e6ee9c; }
-  .card-dist { font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 3px; min-width: 48px; text-align: right; flex-shrink: 0; }
+.btn-locate {
+  background: var(--surface2); color: var(--ink); border: 1.5px solid var(--border);
+  border-radius: 9px; padding: 9px 14px; font-family: 'Inter', sans-serif;
+  font-size: 14px; cursor: pointer; white-space: nowrap; align-self: flex-end;
+  transition: all var(--transition);
+}
+.btn-locate:hover { border-color: var(--accent); }
+.btn-locate.loading-gps { opacity: 0.6; cursor: not-allowed; }
 
-  @media (max-width: 600px) {
-    header h1 { font-size: 2rem; }
-    .card-rank { display: none; }
-    .field-radius { flex: 0 0 88px; }
-  }
+/* ── FILTER CHIPS ── */
+.filters-bar {
+  max-width: 1100px; margin: 0.75rem auto 0;
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+}
+.filter-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 5px 13px;
+  font-size: 12px; cursor: pointer; transition: all 0.15s;
+  user-select: none; color: var(--ink2); font-weight: 500;
+}
+.filter-chip input[type=checkbox] { display: none; }
+.filter-chip.active { background: var(--ink); border-color: var(--ink); color: white; }
+[data-theme="dark"] .filter-chip.active { background: var(--ink2); border-color: var(--ink2); }
+.filter-chip:hover:not(.active) { border-color: var(--ink2); color: var(--ink); }
+.filter-note { font-size: 11px; color: var(--muted); margin-left: 4px; }
+
+/* ── MAIN ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+
+.error-msg {
+  background: #fdecea; border: 1px solid #f5c2c0; border-radius: var(--r);
+  padding: 1rem 1.25rem; color: var(--bad); font-size: 14px; display: none; margin-bottom: 1rem;
+}
+[data-theme="dark"] .error-msg { background: #2a1010; border-color: #5a2020; }
+.error-msg.visible { display: block; }
+
+.loading { display: none; text-align: center; padding: 4rem 0; color: var(--muted); }
+.loading.visible { display: block; }
+.loading-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 1rem; }
+.loading-dots span {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: bounce 1s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-8px); opacity: 1; } }
+
+.empty { display: none; text-align: center; padding: 3rem 0; color: var(--muted); }
+.empty.visible { display: block; }
+.empty h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--ink); margin: 0.5rem 0; }
+
+/* ── HERO EMPTY ── */
+.hero-empty { text-align: center; padding: 2rem 1rem; }
+.hero-empty h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.5rem; }
+.hero-empty p { color: var(--muted); margin-bottom: 1.5rem; }
+.hero-suggestions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.hero-chip {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 20px; padding: 7px 16px; font-size: 13px;
+  cursor: pointer; transition: all 0.15s; color: var(--ink);
+}
+.hero-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;
+}
+.status-bar .count { font-size: 13px; color: var(--muted); }
+.status-bar .count strong { color: var(--ink); }
+
+/* ── RESULTS GRID ── */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+/* ── CARD ── */
+.place-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
+  cursor: pointer; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+}
+.place-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--muted); }
+
+.card-thumb {
+  height: 80px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  position: relative; overflow: hidden;
+}
+.card-thumb-food   { background: linear-gradient(135deg, #2d1a0e 0%, #5a2d0c 100%); }
+.card-thumb-stays  { background: linear-gradient(135deg, #0a1a2d 0%, #0c3d6b 100%); }
+.card-thumb-rec    { background: linear-gradient(135deg, #0a2d1a 0%, #0c5a2d 100%); }
+.card-thumb-emoji  { position: relative; z-index: 2; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+.card-thumb-label {
+  position: absolute; bottom: 8px; right: 10px;
+  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.6);
+  text-transform: uppercase; letter-spacing: 0.08em; z-index: 2;
+}
+
+.card-body { padding: 0.9rem 1rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.card-top { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; }
+.card-name { font-weight: 600; font-size: 0.95rem; line-height: 1.3; flex: 1; }
+.card-dist { font-size: 11px; color: var(--muted); white-space: nowrap; padding-top: 2px; flex-shrink: 0; }
+.card-meta { font-size: 12px; color: var(--ink2); display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.card-sep  { color: var(--border); }
+
+.card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.tag {
+  border-radius: 5px; padding: 2px 7px; font-size: 10px; font-weight: 600;
+  border: 1px solid; white-space: nowrap;
+}
+.tag-open       { background:#d4f5e2; color:#0d6635; border-color:#a8e0c0; }
+.tag-closed     { background:#fdecea; color:#b03020; border-color:#f5c2c0; }
+.tag-price      { background:var(--surface2); color:var(--ink); border-color:var(--border); }
+.tag-alcohol    { background:#fff3e0; color:#b05a10; border-color:#f0c080; }
+.tag-bar        { background:#f3e5f5; color:#7a3095; border-color:#d7b8e8; }
+.tag-vegan      { background:#e8f5e9; color:#1a7a3a; border-color:#a8d8b0; }
+.tag-vegetarian { background:#f1f8e9; color:#4a7a20; border-color:#c5e1a5; }
+.tag-outdoor    { background:#e0f7fa; color:#006878; border-color:#80deea; }
+.tag-delivery   { background:#fce4ec; color:#a01848; border-color:#f48fb1; }
+.tag-takeaway   { background:#fff8e1; color:#b06010; border-color:#ffe082; }
+.tag-wifi       { background:#e8eaf6; color:#2a3890; border-color:#9fa8da; }
+.tag-parking    { background:#efebe9; color:#4d3020; border-color:#bcaaa4; }
+.tag-hotel      { background:#e3f0ff; color:#1a4a8a; border-color:#90b8f0; }
+.tag-hostel     { background:#f0e8ff; color:#5a1a8a; border-color:#c0a0e8; }
+.tag-camping    { background:#e8f5e8; color:#1a5a1a; border-color:#a0c8a0; }
+.tag-stars      { background:#fff8d0; color:#807010; border-color:#e0d060; }
+.tag-hiking     { background:#e0f0e8; color:#1a5a30; border-color:#90c8a8; }
+.tag-swim       { background:#d8f0ff; color:#1a5878; border-color:#80c8e8; }
+.tag-scenic     { background:#f0e8d8; color:#6a4010; border-color:#d0b080; }
+.tag-sport      { background:#ffe8d8; color:#8a3010; border-color:#e8b090; }
+.tag-free       { background:#d8f8d8; color:#1a6a1a; border-color:#90d890; }
+
+[data-theme="dark"] .tag-open       { background:#0d3020; color:#5ae090; border-color:#1a5a35; }
+[data-theme="dark"] .tag-closed     { background:#2a0e0e; color:#e07070; border-color:#5a2020; }
+[data-theme="dark"] .tag-price      { background:var(--surface2); color:var(--ink2); border-color:var(--border); }
+[data-theme="dark"] .tag-hotel      { background:#0d1e35; color:#70a8e8; border-color:#1a3860; }
+[data-theme="dark"] .tag-hiking     { background:#0d2018; color:#70c090; border-color:#1a4030; }
+
+.card-gmaps {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 6px;
+  border-top: 1px solid var(--border); text-decoration: none;
+}
+.card-gmaps:hover { color: var(--accent); }
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-tabs {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+.mobile-tabs-inner { display: flex; justify-content: space-around; }
+.mob-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px; border: none; background: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;
+  color: var(--muted); transition: color var(--transition);
+}
+.mob-tab .mob-icon { font-size: 20px; line-height: 1; }
+.mob-tab.active[data-tab="food"]  { color: var(--tab-food); }
+.mob-tab.active[data-tab="stays"] { color: var(--tab-stays); }
+.mob-tab.active[data-tab="rec"]   { color: var(--tab-rec); }
+
+@media (max-width: 640px) {
+  .tab-bar { display: none; }
+  .mobile-tabs { display: block; }
+  body { padding-bottom: 70px; }
+  .hero { padding: 1.5rem 1rem 1rem; }
+  .hero h2 { font-size: 1.6rem; }
+  .category-cards { gap: 8px; }
+  .cat-card { min-width: 100px; padding: 0.9rem 1rem; }
+  .cat-card-thumb { font-size: 1.8rem; }
+  .results-grid { grid-template-columns: 1fr; }
+  .search-area { padding: 0.75rem 1rem; }
+  .field-radius { flex: 0 0 90px; }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>NZ <em>Eats</em></h1>
-  <p>Find restaurants anywhere in Aotearoa · Data © <a href="https://www.openstreetmap.org/copyright" style="color:#a09080" target="_blank">OpenStreetMap</a> contributors</p>
+<!-- STICKY HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">NZ <span>Explorer</span></div>
+
+    <!-- Desktop tab bar -->
+    <nav class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-tab="food" onclick="switchTab('food')" role="tab">
+        <span class="tab-emoji">🍽️</span> Food &amp; Drink
+      </button>
+      <button class="tab-btn" data-tab="stays" onclick="switchTab('stays')" role="tab">
+        <span class="tab-emoji">🏨</span> Stays
+      </button>
+      <button class="tab-btn" data-tab="rec" onclick="switchTab('rec')" role="tab">
+        <span class="tab-emoji">🏄</span> Activities
+      </button>
+    </nav>
+
+    <div class="header-actions">
+      <button class="btn-dark" onclick="toggleDark()" id="darkBtn" title="Toggle dark mode">🌙</button>
+    </div>
+  </div>
 </header>
 
-<div class="search-panel">
+<!-- HERO SECTION -->
+<section class="hero" id="heroSection">
+  <h2 id="heroTitle">Discover <em>Food &amp; Drink</em><br>across Aotearoa</h2>
+  <p id="heroSub">Search any NZ suburb, city, or street</p>
+
+  <div class="category-cards" id="categoryCards">
+    <!-- Food subcategories -->
+    <div class="cat-card active-food" data-quick="restaurant" onclick="quickCat(this)" id="cat-restaurant">
+      <div class="cat-card-thumb">🍽️</div>
+      <div class="cat-card-label">Restaurants</div>
+      <div class="cat-card-sub">Dine in &amp; fine dining</div>
+    </div>
+    <div class="cat-card" data-quick="cafe" onclick="quickCat(this)" id="cat-cafe">
+      <div class="cat-card-thumb">☕</div>
+      <div class="cat-card-label">Cafés</div>
+      <div class="cat-card-sub">Coffee &amp; brunch</div>
+    </div>
+    <div class="cat-card" data-quick="bar;pub" onclick="quickCat(this)" id="cat-bar">
+      <div class="cat-card-thumb">🍺</div>
+      <div class="cat-card-label">Bars &amp; Pubs</div>
+      <div class="cat-card-sub">Drinks &amp; nightlife</div>
+    </div>
+    <div class="cat-card" data-quick="fast_food" onclick="quickCat(this)" id="cat-fastfood">
+      <div class="cat-card-thumb">🍔</div>
+      <div class="cat-card-label">Fast Food</div>
+      <div class="cat-card-sub">Quick &amp; casual</div>
+    </div>
+  </div>
+
+  <div class="hero-suggestions">
+    <div class="hero-chip" onclick="quickSearch('Auckland CBD')">Auckland CBD</div>
+    <div class="hero-chip" onclick="quickSearch('Queenstown')">Queenstown</div>
+    <div class="hero-chip" onclick="quickSearch('Wellington')">Wellington</div>
+    <div class="hero-chip" onclick="quickSearch('Christchurch')">Christchurch</div>
+    <div class="hero-chip" onclick="quickSearch('Ponsonby')">Ponsonby</div>
+    <div class="hero-chip" onclick="quickSearch('Tauranga')">Tauranga</div>
+  </div>
+</section>
+
+<!-- SEARCH BAR -->
+<div class="search-area" id="searchArea">
   <div class="search-row">
     <div class="field field-location">
       <label>Location</label>
-      <input type="text" id="locationInput" placeholder="Auckland CBD, Queenstown, Ponsonby…" autocomplete="off">
+      <input type="text" id="locationInput" placeholder="Suburb, city, or street…" autocomplete="off">
       <div class="suggestions" id="suggestions"></div>
     </div>
     <div class="field field-radius">
       <label>Radius</label>
       <select id="radiusSelect">
-        <option value="250">250m</option>
         <option value="500">500m</option>
         <option value="1000" selected>1 km</option>
         <option value="2000">2 km</option>
         <option value="3000">3 km</option>
         <option value="5000">5 km</option>
         <option value="10000">10 km</option>
-        <option value="15000">15 km</option>
         <option value="25000">25 km</option>
         <option value="50000">50 km</option>
-        <option value="75000">75 km</option>
-        <option value="100000">100 km</option>
       </select>
     </div>
-    <div class="field field-cuisine">
-      <label>Cuisine</label>
-      <select id="cuisineSelect">
-        <option value="">Any cuisine</option>
-        <option value="restaurant">🍽️ Restaurant</option>
-        <option value="cafe">☕ Café</option>
-        <option value="japanese;sushi">🍣 Japanese / Sushi</option>
-        <option value="pizza">🍕 Pizza</option>
-        <option value="burger">🍔 Burgers</option>
-        <option value="mexican">🌮 Mexican</option>
-        <option value="chinese">🍜 Chinese</option>
-        <option value="indian">🫕 Indian</option>
-        <option value="thai">🍱 Thai</option>
-        <option value="middle_eastern">🥙 Middle Eastern</option>
-        <option value="steak_house">🥩 Steakhouse</option>
-        <option value="seafood">🐟 Seafood</option>
-        <option value="bar;pub">🍺 Bar / Pub</option>
-        <option value="breakfast;brunch">🍳 Brunch</option>
-      </select>
+    <div class="field field-cat">
+      <label id="catLabel">Cuisine</label>
+      <select id="catSelect"></select>
     </div>
     <div class="field field-sort">
-      <label>Sort by</label>
+      <label>Sort</label>
       <select id="sortSelect" onchange="applyFiltersAndSort()">
         <option value="distance">Nearest first</option>
         <option value="name">A → Z</option>
@@ -230,24 +509,15 @@
     <button class="btn-search" id="searchBtn" onclick="doSearch()">Search</button>
   </div>
 
-  <div class="filters-bar">
-    <label class="filter-chip" id="chip-open"><input type="checkbox" id="filter-open" onchange="applyFiltersAndSort()">✅ Open now</label>
-    <label class="filter-chip" id="chip-alcohol"><input type="checkbox" id="filter-alcohol" onchange="applyFiltersAndSort()">🍷 Alcohol</label>
-    <label class="filter-chip" id="chip-bar"><input type="checkbox" id="filter-bar" onchange="applyFiltersAndSort()">🍺 Bar</label>
-    <label class="filter-chip" id="chip-vegan"><input type="checkbox" id="filter-vegan" onchange="applyFiltersAndSort()">🌱 Vegan</label>
-    <label class="filter-chip" id="chip-vegetarian"><input type="checkbox" id="filter-vegetarian" onchange="applyFiltersAndSort()">🥦 Vegetarian</label>
-    <label class="filter-chip" id="chip-outdoor"><input type="checkbox" id="filter-outdoor" onchange="applyFiltersAndSort()">🌿 Outdoor seating</label>
-    <label class="filter-chip" id="chip-delivery"><input type="checkbox" id="filter-delivery" onchange="applyFiltersAndSort()">🛵 Delivery</label>
-    <label class="filter-chip" id="chip-takeaway"><input type="checkbox" id="filter-takeaway" onchange="applyFiltersAndSort()">🥡 Takeaway</label>
-    <span style="font-size:11px;color:var(--muted);align-self:center;padding-left:4px">Filters show places where OSM has that info</span>
-  </div>
+  <div class="filters-bar" id="filtersBar"></div>
 </div>
 
-<div class="main">
+<!-- MAIN CONTENT -->
+<main class="main">
   <div class="error-msg" id="errorMsg"></div>
   <div class="loading" id="loading">
     <div class="loading-dots"><span></span><span></span><span></span></div>
-    Finding restaurants…
+    <span id="loadingText">Searching…</span>
   </div>
   <div class="empty" id="emptyState">
     <div style="font-size:2.5rem;margin-bottom:.5rem">🔍</div>
@@ -255,33 +525,228 @@
     <p>Try removing filters or expanding the radius.</p>
   </div>
 
-  <div id="heroEmpty" class="hero-empty">
-    <h2>Where are you eating?</h2>
-    <p>Search any NZ suburb, city, or street to find restaurants nearby.</p>
-    <div class="hero-suggestions">
-      <div class="hero-chip" onclick="quickSearch('Auckland CBD')">Auckland CBD</div>
-      <div class="hero-chip" onclick="quickSearch('Queenstown')">Queenstown</div>
-      <div class="hero-chip" onclick="quickSearch('Wellington')">Wellington</div>
-      <div class="hero-chip" onclick="quickSearch('Christchurch')">Christchurch</div>
-      <div class="hero-chip" onclick="quickSearch('Ponsonby')">Ponsonby</div>
-      <div class="hero-chip" onclick="quickSearch('Tauranga')">Tauranga</div>
-    </div>
-  </div>
+  <div id="heroEmpty" class="hero-empty" style="display:none"></div>
 
   <div id="resultsArea" style="display:none">
     <div class="status-bar">
       <div class="count" id="countLabel"></div>
     </div>
-    <div id="resultsList"></div>
+    <div class="results-grid" id="resultsList"></div>
   </div>
-</div>
+</main>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-tabs" aria-label="Main tabs">
+  <div class="mobile-tabs-inner">
+    <button class="mob-tab active" data-tab="food" onclick="switchTab('food')">
+      <span class="mob-icon">🍽️</span>Food
+    </button>
+    <button class="mob-tab" data-tab="stays" onclick="switchTab('stays')">
+      <span class="mob-icon">🏨</span>Stays
+    </button>
+    <button class="mob-tab" data-tab="rec" onclick="switchTab('rec')">
+      <span class="mob-icon">🏄</span>Activities
+    </button>
+  </div>
+</nav>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────
-// No API key needed — uses OpenStreetMap Overpass API (free, open)
-
+// ── STATE ─────────────────────────────────────────────────────
+let currentTab = 'food';
 let allResults = [];
 let suggestTimer = null;
+
+// ── TAB CONFIG ────────────────────────────────────────────────
+const TAB_CONFIG = {
+  food: {
+    title: 'Discover <em>Food &amp; Drink</em><br>across Aotearoa',
+    sub: 'Restaurants, cafés, bars and more',
+    catLabel: 'Cuisine',
+    loadingText: 'Finding places to eat…',
+    catOptions: [
+      { value: '', label: 'All food & drink' },
+      { value: 'restaurant', label: '🍽️ Restaurant' },
+      { value: 'cafe', label: '☕ Café' },
+      { value: 'japanese;sushi', label: '🍣 Japanese / Sushi' },
+      { value: 'pizza', label: '🍕 Pizza' },
+      { value: 'burger', label: '🍔 Burgers' },
+      { value: 'mexican', label: '🌮 Mexican' },
+      { value: 'chinese', label: '🍜 Chinese' },
+      { value: 'indian', label: '🫕 Indian' },
+      { value: 'thai', label: '🍱 Thai' },
+      { value: 'middle_eastern', label: '🥙 Middle Eastern' },
+      { value: 'steak_house', label: '🥩 Steakhouse' },
+      { value: 'seafood', label: '🐟 Seafood' },
+      { value: 'bar;pub', label: '🍺 Bar / Pub' },
+      { value: 'breakfast;brunch', label: '🍳 Brunch' },
+      { value: 'fast_food', label: '🍟 Fast Food' },
+    ],
+    filters: [
+      { id: 'open',       label: '✅ Open now' },
+      { id: 'alcohol',    label: '🍷 Alcohol' },
+      { id: 'bar',        label: '🍺 Bar' },
+      { id: 'vegan',      label: '🌱 Vegan' },
+      { id: 'vegetarian', label: '🥦 Vegetarian' },
+      { id: 'outdoor',    label: '🌿 Outdoor' },
+      { id: 'delivery',   label: '🛵 Delivery' },
+      { id: 'takeaway',   label: '🥡 Takeaway' },
+    ],
+    cards: [
+      { id: 'cat-restaurant', quick: 'restaurant', thumb: '🍽️', label: 'Restaurants', sub: 'Dine in & fine dining', cls: 'active-food' },
+      { id: 'cat-cafe',       quick: 'cafe',        thumb: '☕', label: 'Cafés',        sub: 'Coffee & brunch',      cls: '' },
+      { id: 'cat-bar',        quick: 'bar;pub',     thumb: '🍺', label: 'Bars & Pubs', sub: 'Drinks & nightlife',   cls: '' },
+      { id: 'cat-fastfood',   quick: 'fast_food',   thumb: '🍔', label: 'Fast Food',   sub: 'Quick & casual',      cls: '' },
+    ],
+    amenityTypes: ['restaurant','cafe','bar','pub','fast_food','food_court','biergarten'],
+    thumbClass: 'card-thumb-food',
+    thumbEmoji: place => foodEmoji(place),
+    tagType: 'food',
+  },
+  stays: {
+    title: 'Find <em>Places to Stay</em><br>across Aotearoa',
+    sub: 'Hotels, motels, hostels, B&Bs and camping',
+    catLabel: 'Type',
+    loadingText: 'Finding places to stay…',
+    catOptions: [
+      { value: '', label: 'All stays' },
+      { value: 'hotel', label: '🏨 Hotel' },
+      { value: 'motel', label: '🏩 Motel' },
+      { value: 'hostel', label: '🛏️ Hostel' },
+      { value: 'guest_house', label: '🏡 Guest House / B&B' },
+      { value: 'camp_site', label: '⛺ Camping' },
+      { value: 'caravan_site', label: '🚐 Holiday Park' },
+      { value: 'chalet', label: '🏔️ Chalet / Cabin' },
+      { value: 'apartment', label: '🏢 Apartment' },
+    ],
+    filters: [
+      { id: 'open',    label: '✅ Open now' },
+      { id: 'wifi',    label: '📶 WiFi' },
+      { id: 'parking', label: '🅿️ Parking' },
+      { id: 'outdoor', label: '🌿 Outdoor area' },
+    ],
+    cards: [
+      { id: 'cat-hotel',   quick: 'hotel',       thumb: '🏨', label: 'Hotels',         sub: 'Comfort & service',  cls: 'active-stays' },
+      { id: 'cat-hostel',  quick: 'hostel',       thumb: '🛏️', label: 'Hostels',        sub: 'Budget & social',    cls: '' },
+      { id: 'cat-camping', quick: 'camp_site',    thumb: '⛺', label: 'Camping',        sub: 'Under the stars',    cls: '' },
+      { id: 'cat-bnb',     quick: 'guest_house',  thumb: '🏡', label: 'B&Bs',           sub: 'Homey & boutique',   cls: '' },
+    ],
+    amenityTypes: ['hotel','motel','hostel','guest_house','camp_site','caravan_site','chalet','apartment'],
+    thumbClass: 'card-thumb-stays',
+    thumbEmoji: place => staysEmoji(place),
+    tagType: 'stays',
+  },
+  rec: {
+    title: 'Explore <em>Activities</em><br>across Aotearoa',
+    sub: 'Hiking, swimming, sports and outdoor adventures',
+    catLabel: 'Activity',
+    loadingText: 'Finding activities…',
+    catOptions: [
+      { value: '', label: 'All activities' },
+      { value: 'park', label: '🌿 Parks & Reserves' },
+      { value: 'hiking', label: '🥾 Hiking Trails' },
+      { value: 'swimming', label: '🏊 Swimming' },
+      { value: 'beach', label: '🏖️ Beaches' },
+      { value: 'sports_centre', label: '🏋️ Sports Centre' },
+      { value: 'golf_course', label: '⛳ Golf' },
+      { value: 'tennis', label: '🎾 Tennis' },
+      { value: 'skatepark', label: '🛹 Skate Park' },
+      { value: 'playground', label: '🛝 Playground' },
+      { value: 'museum', label: '🏛️ Museum' },
+      { value: 'viewpoint', label: '📸 Viewpoint' },
+      { value: 'cinema', label: '🎬 Cinema' },
+    ],
+    filters: [
+      { id: 'free',    label: '🆓 Free entry' },
+      { id: 'outdoor', label: '🌿 Outdoor' },
+      { id: 'parking', label: '🅿️ Parking nearby' },
+    ],
+    cards: [
+      { id: 'cat-nature',  quick: 'park',         thumb: '🌿', label: 'Nature',    sub: 'Parks & reserves',   cls: 'active-rec' },
+      { id: 'cat-water',   quick: 'swimming',      thumb: '🏊', label: 'Water',     sub: 'Beaches & pools',    cls: '' },
+      { id: 'cat-sports',  quick: 'sports_centre', thumb: '🏋️', label: 'Sports',    sub: 'Courts & gyms',      cls: '' },
+      { id: 'cat-culture', quick: 'museum',        thumb: '🏛️', label: 'Culture',   sub: 'Museums & arts',     cls: '' },
+    ],
+    amenityTypes: [],
+    thumbClass: 'card-thumb-rec',
+    thumbEmoji: place => recEmoji(place),
+    tagType: 'rec',
+  }
+};
+
+// ── TAB SWITCH ────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  const cfg = TAB_CONFIG[tab];
+
+  // Header tabs
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.mob-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+
+  // Hero
+  document.getElementById('heroTitle').innerHTML = cfg.title;
+  document.getElementById('heroSub').textContent = cfg.sub;
+
+  // Category cards
+  const cards = document.getElementById('categoryCards');
+  cards.innerHTML = cfg.cards.map(c => `
+    <div class="cat-card ${c.cls}" data-quick="${c.quick}" onclick="quickCat(this)" id="${c.id}">
+      <div class="cat-card-thumb">${c.thumb}</div>
+      <div class="cat-card-label">${c.label}</div>
+      <div class="cat-card-sub">${c.sub}</div>
+    </div>
+  `).join('');
+
+  // Cat select
+  document.getElementById('catLabel').textContent = cfg.catLabel;
+  const sel = document.getElementById('catSelect');
+  sel.innerHTML = cfg.catOptions.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+
+  // Filters
+  const fb = document.getElementById('filtersBar');
+  fb.innerHTML = cfg.filters.map(f =>
+    `<label class="filter-chip" id="chip-${f.id}"><input type="checkbox" id="filter-${f.id}" onchange="applyFiltersAndSort()">${f.label}</label>`
+  ).join('') + `<span class="filter-note">Filters show places where OSM has that data</span>`;
+
+  // Loading text
+  document.getElementById('loadingText').textContent = cfg.loadingText;
+
+  // Reset results
+  allResults = [];
+  document.getElementById('resultsArea').style.display = 'none';
+  document.getElementById('heroEmpty').style.display = 'none';
+  document.getElementById('emptyState').classList.remove('visible');
+  clearError();
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function quickCat(el) {
+  // Set dropdown
+  const quick = el.dataset.quick;
+  document.getElementById('catSelect').value = quick;
+  // Active style
+  document.querySelectorAll('.cat-card').forEach(c => {
+    c.className = 'cat-card';
+  });
+  const cls = { food: 'active-food', stays: 'active-stays', rec: 'active-rec' }[currentTab];
+  el.classList.add(cls);
+  // Search if we have a location
+  const loc = document.getElementById('locationInput').value.trim();
+  if (loc) doSearch();
+}
+
+// ── DARK MODE ─────────────────────────────────────────────────
+function toggleDark() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = isDark ? 'light' : 'dark';
+  document.getElementById('darkBtn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('nzexp-dark', isDark ? '0' : '1');
+}
+if (localStorage.getItem('nzexp-dark') === '1') {
+  document.documentElement.dataset.theme = 'dark';
+  document.getElementById('darkBtn').textContent = '☀️';
+}
 
 // ── AUTOCOMPLETE ──────────────────────────────────────────────
 const locationInput = document.getElementById('locationInput');
@@ -293,23 +758,19 @@ locationInput.addEventListener('input', function() {
   if (val.length < 2) { hideSuggestions(); return; }
   suggestTimer = setTimeout(() => fetchSuggestions(val), 300);
 });
-
 locationInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') { hideSuggestions(); doSearch(); }
   if (e.key === 'Escape') hideSuggestions();
 });
-
 document.addEventListener('mousedown', e => {
   if (!e.target.closest('.field-location')) hideSuggestions();
 });
 
 async function fetchSuggestions(q) {
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=en&format=json`;
-    const res = await fetch(url);
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=en&format=json`);
     const data = await res.json();
-    const nzResults = (data.results || []).filter(r => r.country_code === 'NZ');
-    renderSuggestions(nzResults);
+    renderSuggestions((data.results || []).filter(r => r.country_code === 'NZ'));
   } catch(e) { hideSuggestions(); }
 }
 
@@ -320,9 +781,9 @@ function renderSuggestions(items) {
     const label = [item.name, item.admin1].filter(Boolean).join(', ');
     const d = document.createElement('div');
     d.className = 'suggestion-item';
-    d.innerHTML = `<span class="s-icon">📍</span> ${label}`;
+    d.innerHTML = `<span>📍</span> ${label}`;
     d.addEventListener('mousedown', e => {
-      e.preventDefault(); // prevent blur before click
+      e.preventDefault();
       locationInput.value = label;
       hideSuggestions();
       doSearchWithCoords(item.latitude, item.longitude, label);
@@ -331,302 +792,212 @@ function renderSuggestions(items) {
   });
   suggestionsBox.style.display = 'block';
 }
+function hideSuggestions() { suggestionsBox.style.display = 'none'; }
 
-function hideSuggestions() {
-  suggestionsBox.style.display = 'none';
-}
-
-// ── GEOCODE + SEARCH ──────────────────────────────────────────
+// ── GEOCODE ───────────────────────────────────────────────────
 async function doSearch() {
   const q = locationInput.value.trim();
   if (!q) return;
-  hideSuggestions();
-  setLoading(true);
-  clearError();
+  hideSuggestions(); setLoading(true); clearError();
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=en&format=json`;
-    const res = await fetch(url);
+    const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=en&format=json`);
     const data = await res.json();
     const nz = (data.results || []).filter(r => r.country_code === 'NZ');
     if (!nz.length) {
       showError('Location not found in New Zealand. Try "Auckland CBD" or "Queenstown".');
-      setLoading(false);
-      return;
+      setLoading(false); return;
     }
     const best = nz[0];
-    const label = [best.name, best.admin1].filter(Boolean).join(', ');
-    locationInput.value = label;
-    doSearchWithCoords(best.latitude, best.longitude, label);
+    locationInput.value = [best.name, best.admin1].filter(Boolean).join(', ');
+    doSearchWithCoords(best.latitude, best.longitude, locationInput.value);
   } catch(e) {
     showError('Could not geocode location. Check your connection and try again.');
     setLoading(false);
   }
 }
 
-function quickSearch(name) {
-  locationInput.value = name;
-  doSearch();
-}
+function quickSearch(name) { locationInput.value = name; doSearch(); }
 
 // ── GPS ───────────────────────────────────────────────────────
 function useGPS() {
   const btn = document.getElementById('gpsBtn');
-  if (!navigator.geolocation) {
-    showError('GPS is not available on this browser.');
-    return;
-  }
-  btn.textContent = '⏳ Locating…';
-  btn.classList.add('loading-gps');
-  btn.disabled = true;
-
+  if (!navigator.geolocation) { showError('GPS not available on this browser.'); return; }
+  btn.textContent = '⏳'; btn.classList.add('loading-gps'); btn.disabled = true;
   navigator.geolocation.getCurrentPosition(
     async pos => {
       const { latitude: lat, longitude: lng } = pos.coords;
-      // Reverse geocode to get a place name
       try {
-        const url = `https://geocoding-api.open-meteo.com/v1/search?name=&count=1&language=en&format=json`;
-        // Use Nominatim reverse geocoding instead
-        const revUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`;
-        const res = await fetch(revUrl);
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`);
         const data = await res.json();
-        const addr = data.address || {};
-        const label = addr.suburb || addr.city_district || addr.town || addr.city || addr.county || 'My location';
-        locationInput.value = label;
-      } catch(e) {
-        locationInput.value = 'My location';
-      }
-      btn.textContent = '📍 GPS';
-      btn.classList.remove('loading-gps');
-      btn.disabled = false;
+        const a = data.address || {};
+        locationInput.value = a.suburb || a.city_district || a.town || a.city || 'My location';
+      } catch(e) { locationInput.value = 'My location'; }
+      btn.textContent = '📍 GPS'; btn.classList.remove('loading-gps'); btn.disabled = false;
       doSearchWithCoords(lat, lng, locationInput.value);
     },
     err => {
-      btn.textContent = '📍 GPS';
-      btn.classList.remove('loading-gps');
-      btn.disabled = false;
-      const msg = err.code === 1
-        ? 'Location access denied. Please allow location access in your browser settings.'
-        : 'Could not get your location. Try typing a suburb instead.';
-      showError(msg);
+      btn.textContent = '📍 GPS'; btn.classList.remove('loading-gps'); btn.disabled = false;
+      showError(err.code === 1 ? 'Location access denied. Allow location in browser settings.' : 'Could not get location. Type a suburb instead.');
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
-// ── OVERPASS API (OpenStreetMap) ──────────────────────────────
-async function doSearchWithCoords(lat, lng, label) {
-  setLoading(true);
-  clearError();
-  document.getElementById('heroEmpty').style.display = 'none';
+// ── OVERPASS QUERY BUILDER ────────────────────────────────────
+function buildOverpassQuery(lat, lng, radius, catValue) {
+  const cfg = TAB_CONFIG[currentTab];
+  const catValues = catValue ? catValue.split(';').map(s => s.trim()) : [];
 
-  const radius = document.getElementById('radiusSelect').value;
-  const cuisine = document.getElementById('cuisineSelect').value;
-
-  // Build Overpass query
-  // amenity types to search: restaurant, cafe, bar, pub, fast_food, food_court, biergarten
-  const amenityTypes = ['restaurant', 'cafe', 'bar', 'pub', 'fast_food', 'food_court', 'biergarten'];
-  const cuisineTags = cuisine ? cuisine.split(';') : [];
-
-  let nodeQueries = '';
-  let wayQueries  = '';
-
-  if (cuisineTags.length) {
-    // Filter by cuisine tag — search restaurants/cafes/bars with that cuisine
-    for (const ct of cuisineTags) {
-      const c = ct.trim();
-      nodeQueries += `node["amenity"~"restaurant|cafe|bar|pub|fast_food"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});\n`;
-      wayQueries  += `way["amenity"~"restaurant|cafe|bar|pub|fast_food"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});\n`;
-      // Also handle amenity=bar for bar/pub option
-      if (c === 'bar' || c === 'pub') {
-        nodeQueries += `node["amenity"~"bar|pub"](around:${radius},${lat},${lng});\n`;
-        wayQueries  += `way["amenity"~"bar|pub"](around:${radius},${lat},${lng});\n`;
-      }
-      if (c === 'cafe') {
-        nodeQueries += `node["amenity"="cafe"](around:${radius},${lat},${lng});\n`;
-        wayQueries  += `way["amenity"="cafe"](around:${radius},${lat},${lng});\n`;
-      }
+  if (currentTab === 'food') {
+    const amenityFilter = cfg.amenityTypes.join('|');
+    if (catValues.length && !catValues.includes('restaurant') && !catValues.includes('cafe') && !catValues.includes('bar') && !catValues.includes('pub') && !catValues.includes('fast_food')) {
+      // cuisine-based search
+      return `[out:json][timeout:25];\n(\n` +
+        catValues.map(c =>
+          `node["amenity"~"${amenityFilter}"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});\n` +
+          `way["amenity"~"${amenityFilter}"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});`
+        ).join('\n') +
+        `\n);\nout body center 50;`;
+    } else if (catValues.length) {
+      const af = catValues.join('|');
+      return `[out:json][timeout:25];\n(\nnode["amenity"~"${af}"](around:${radius},${lat},${lng});\nway["amenity"~"${af}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+    } else {
+      return `[out:json][timeout:25];\n(\nnode["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\nway["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
     }
-  } else {
-    // All food/drink amenities
-    const amenityFilter = amenityTypes.join('|');
-    nodeQueries = `node["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\n`;
-    wayQueries  = `way["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\n`;
   }
 
-  const query = `
-[out:json][timeout:25];
-(
-${nodeQueries}${wayQueries}
-);
-out body center 50;
-`;
+  if (currentTab === 'stays') {
+    if (catValues.length) {
+      const af = catValues.join('|');
+      return `[out:json][timeout:25];\n(\nnode["tourism"~"${af}"](around:${radius},${lat},${lng});\nway["tourism"~"${af}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+    }
+    const tf = cfg.amenityTypes.join('|');
+    return `[out:json][timeout:25];\n(\nnode["tourism"~"${tf}"](around:${radius},${lat},${lng});\nway["tourism"~"${tf}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+  }
+
+  if (currentTab === 'rec') {
+    const recAmenities = ['swimming_pool','sports_centre','golf_course','tennis','skatepark','playground','cinema','theatre','museum','arts_centre'];
+    const recTourism   = ['viewpoint','picnic_site','theme_park'];
+    const recLeisure   = ['park','garden','stadium','swimming_area','pitch','track','fitness_centre','nature_reserve'];
+    const recNatural   = ['beach','cliff','peak','cave_entrance'];
+
+    if (catValues.length) {
+      const c = catValues[0];
+      if (c === 'park')          return `[out:json][timeout:25];\n(\nnode["leisure"~"park|garden|nature_reserve"](around:${radius},${lat},${lng});\nway["leisure"~"park|garden|nature_reserve"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'hiking')        return `[out:json][timeout:25];\n(\nway["highway"="path"]["sac_scale"](around:${radius},${lat},${lng});\nway["route"="hiking"](around:${radius},${lat},${lng});\nnode["tourism"="viewpoint"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'swimming')      return `[out:json][timeout:25];\n(\nnode["amenity"="swimming_pool"](around:${radius},${lat},${lng});\nway["amenity"="swimming_pool"](around:${radius},${lat},${lng});\nnode["leisure"="swimming_area"](around:${radius},${lat},${lng});\nway["leisure"="swimming_area"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'beach')         return `[out:json][timeout:25];\n(\nnode["natural"="beach"](around:${radius},${lat},${lng});\nway["natural"="beach"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'sports_centre') return `[out:json][timeout:25];\n(\nnode["amenity"="sports_centre"](around:${radius},${lat},${lng});\nway["amenity"="sports_centre"](around:${radius},${lat},${lng});\nnode["leisure"~"fitness_centre|stadium|pitch"](around:${radius},${lat},${lng});\nway["leisure"~"fitness_centre|stadium|pitch"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'golf_course')   return `[out:json][timeout:25];\n(\nnode["leisure"="golf_course"](around:${radius},${lat},${lng});\nway["leisure"="golf_course"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'tennis')        return `[out:json][timeout:25];\n(\nnode["sport"="tennis"](around:${radius},${lat},${lng});\nway["sport"="tennis"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'skatepark')     return `[out:json][timeout:25];\n(\nnode["leisure"="skatepark"](around:${radius},${lat},${lng});\nway["leisure"="skatepark"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'playground')    return `[out:json][timeout:25];\n(\nnode["leisure"="playground"](around:${radius},${lat},${lng});\nway["leisure"="playground"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'museum')        return `[out:json][timeout:25];\n(\nnode["tourism"~"museum|gallery|artwork"](around:${radius},${lat},${lng});\nway["tourism"~"museum|gallery|artwork"](around:${radius},${lat},${lng});\nnode["amenity"~"cinema|theatre|arts_centre"](around:${radius},${lat},${lng});\nway["amenity"~"cinema|theatre|arts_centre"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'viewpoint')     return `[out:json][timeout:25];\n(\nnode["tourism"="viewpoint"](around:${radius},${lat},${lng});\nway["tourism"="viewpoint"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+      if (c === 'cinema')        return `[out:json][timeout:25];\n(\nnode["amenity"="cinema"](around:${radius},${lat},${lng});\nway["amenity"="cinema"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+    }
+
+    // Default: all rec
+    const aF = recAmenities.join('|');
+    const tF = recTourism.join('|');
+    const lF = recLeisure.join('|');
+    const nF = recNatural.join('|');
+    return `[out:json][timeout:25];\n(\nnode["amenity"~"${aF}"](around:${radius},${lat},${lng});\nway["amenity"~"${aF}"](around:${radius},${lat},${lng});\nnode["tourism"~"${tF}"](around:${radius},${lat},${lng});\nway["tourism"~"${tF}"](around:${radius},${lat},${lng});\nnode["leisure"~"${lF}"](around:${radius},${lat},${lng});\nway["leisure"~"${lF}"](around:${radius},${lat},${lng});\nnode["natural"~"${nF}"](around:${radius},${lat},${lng});\nway["natural"~"${nF}"](around:${radius},${lat},${lng});\n);\nout body center 50;`;
+  }
+}
+
+// ── SEARCH ────────────────────────────────────────────────────
+async function doSearchWithCoords(lat, lng, label) {
+  setLoading(true); clearError();
+  document.getElementById('heroEmpty').style.display = 'none';
+
+  const radius   = document.getElementById('radiusSelect').value;
+  const catValue = document.getElementById('catSelect').value;
+  const query    = buildOverpassQuery(lat, lng, radius, catValue);
 
   try {
-    const res = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      body: query
-    });
-
+    const res = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
     if (!res.ok) throw new Error(`Overpass error ${res.status}`);
-
     const data = await res.json();
     const elements = data.elements || [];
 
-    // Convert OSM elements to a normalised format
     allResults = elements
       .filter(el => el.tags && el.tags.name)
-      .map(el => {
-        const tags = el.tags;
-        const elLat = el.lat ?? el.center?.lat;
-        const elLng = el.lon ?? el.center?.lon;
-        const dist = elLat != null ? haversine(lat, lng, elLat, elLng) : null;
-
-        // Opening hours: OSM stores as a raw string; we parse "open now" heuristically
-        const openNow = guessOpenNow(tags.opening_hours);
-
-        // Price: map OSM fee/price_range or stars to 1–4
-        const price = osmPrice(tags);
-
-        // Features derived from tags
-        const features = {
-          food_and_drink: {
-            alcohol:  !!(tags.alcohol || tags['drink:alcohol'] || tags.amenity === 'bar' || tags.amenity === 'pub'),
-            bar:      !!(tags.amenity === 'bar' || tags.amenity === 'pub'),
-            menus: {
-              has_vegan:      tags.diet_vegan === 'yes' || tags['diet:vegan'] === 'yes',
-              has_vegetarian: tags['diet:vegetarian'] === 'yes' || tags.diet_vegetarian === 'yes',
-              has_gluten_free:tags['diet:gluten_free'] === 'yes',
-            }
-          },
-          services: {
-            delivery:  tags.delivery === 'yes',
-            takeout:   tags.takeaway === 'yes' || tags.takeout === 'yes',
-            dine_in:   { reservations: tags.reservation === 'yes' || tags.reservations === 'yes' }
-          },
-          amenities: {
-            outdoor_seating:  tags.outdoor_seating === 'yes',
-            wifi:             tags.internet_access === 'wlan' || tags.wifi === 'yes',
-            live_music:       tags.live_music === 'yes',
-            parking:          { parking_available: !!(tags.parking || tags['parking:fee'] || tags['capacity:parking']) }
-          }
-        };
-
-        const cuisine = tags.cuisine ? tags.cuisine.replace(/_/g,' ').replace(/;/g, ', ') : '';
-        const category = amenityLabel(tags.amenity);
-
-        return {
-          osm_id:   el.id,
-          osm_type: el.type,
-          name:     tags.name,
-          location: {
-            address:  tags['addr:street'] ? `${tags['addr:housenumber'] || ''} ${tags['addr:street']}`.trim() : '',
-            locality: tags['addr:city'] || tags['addr:suburb'] || tags['addr:town'] || ''
-          },
-          distance: dist ? Math.round(dist) : null,
-          rating:   null,  // OSM doesn't have ratings
-          price,
-          hours:    { open_now: openNow, raw: tags.opening_hours || null },
-          features,
-          categories: cuisine
-            ? [{ name: cuisine }]
-            : category ? [{ name: category }] : [],
-          website:  tags.website || tags['contact:website'] || null,
-          phone:    tags.phone || tags['contact:phone'] || null,
-        };
-      })
+      .map(el => normalisePlace(el, lat, lng))
       .sort((a, b) => (a.distance || 99999) - (b.distance || 99999));
 
-    if (!allResults.length) {
-      showEmpty();
-    } else {
-      applyFiltersAndSort();
-    }
+    if (!allResults.length) showEmpty();
+    else applyFiltersAndSort();
   } catch(e) {
-    showError(`Could not load restaurants: ${e.message}`);
+    showError(`Could not load results: ${e.message}`);
   }
   setLoading(false);
 }
 
-// ── OSM HELPERS ───────────────────────────────────────────────
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
+// ── NORMALISE ─────────────────────────────────────────────────
+function normalisePlace(el, searchLat, searchLng) {
+  const t = el.tags;
+  const elLat = el.lat ?? el.center?.lat;
+  const elLng = el.lon ?? el.center?.lon;
+  const dist  = elLat != null ? Math.round(haversine(searchLat, searchLng, elLat, elLng)) : null;
+  const openNow = guessOpenNow(t.opening_hours);
 
-function amenityLabel(a) {
-  return { restaurant:'Restaurant', cafe:'Café', bar:'Bar', pub:'Pub',
-           fast_food:'Fast Food', food_court:'Food Court', biergarten:'Beer Garden' }[a] || '';
-}
-
-function osmPrice(tags) {
-  // OSM price_range: $, $$, $$$, $$$$
-  const pr = tags.price_range || tags['price:range'] || '';
-  if (pr) return Math.min(4, pr.replace(/[^$]/g,'').length) || null;
-  const stars = parseInt(tags.stars || '0');
-  if (stars >= 4) return 4;
-  if (stars === 3) return 3;
-  if (stars === 2) return 2;
-  if (stars === 1) return 1;
-  return null;
-}
-
-function guessOpenNow(ohStr) {
-  if (!ohStr) return null;
-  if (ohStr.trim().toLowerCase() === '24/7') return true;
-  // Basic parsing: only handle simple "Mo-Su HH:MM-HH:MM" patterns
-  try {
-    const now = new Date();
-    const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-    const todayAbbr = dayNames[now.getDay()];
-    const currentMins = now.getHours() * 60 + now.getMinutes();
-
-    // Match patterns like "Mo-Fr 09:00-22:00" or "Mo-Su 08:00-21:00"
-    const rangePattern = /([A-Z][a-z])(?:-([A-Z][a-z]))?\s+(\d{2}):(\d{2})-(\d{2}):(\d{2})/g;
-    let match;
-    let found = false;
-    while ((match = rangePattern.exec(ohStr)) !== null) {
-      const [, startDay, endDay, sh, sm, eh, em] = match;
-      const startIdx = dayNames.indexOf(startDay);
-      const endIdx   = endDay ? dayNames.indexOf(endDay) : startIdx;
-      const todayIdx = dayNames.indexOf(todayAbbr);
-      const inDay = startIdx <= endIdx
-        ? todayIdx >= startIdx && todayIdx <= endIdx
-        : todayIdx >= startIdx || todayIdx <= endIdx;
-      if (inDay) {
-        found = true;
-        const open  = parseInt(sh)*60 + parseInt(sm);
-        const close = parseInt(eh)*60 + parseInt(em);
-        if (currentMins >= open && currentMins < close) return true;
+  return {
+    osm_id:   el.id,
+    osm_type: el.type,
+    lat: elLat, lng: elLng,
+    name: t.name,
+    tags: t,
+    location: {
+      address:  t['addr:street'] ? `${t['addr:housenumber']||''} ${t['addr:street']}`.trim() : '',
+      locality: t['addr:city'] || t['addr:suburb'] || t['addr:town'] || ''
+    },
+    distance: dist,
+    hours:    { open_now: openNow, raw: t.opening_hours || null },
+    price:    osmPrice(t),
+    website:  t.website || t['contact:website'] || null,
+    phone:    t.phone   || t['contact:phone']   || null,
+    features: {
+      food_and_drink: {
+        alcohol: !!(t.alcohol || t['drink:alcohol'] || t.amenity === 'bar' || t.amenity === 'pub'),
+        bar:     !!(t.amenity === 'bar' || t.amenity === 'pub'),
+        menus:   {
+          has_vegan:      t['diet:vegan'] === 'yes',
+          has_vegetarian: t['diet:vegetarian'] === 'yes',
+        }
+      },
+      services: {
+        delivery: t.delivery === 'yes',
+        takeout:  t.takeaway === 'yes' || t.takeout === 'yes',
+        dine_in:  { reservations: t.reservation === 'yes' }
+      },
+      amenities: {
+        outdoor_seating: t.outdoor_seating === 'yes',
+        wifi:   t.internet_access === 'wlan' || t.wifi === 'yes',
+        parking: { parking_available: !!(t.parking || t['capacity:parking']) },
+        free:   t.fee === 'no' || t.access === 'yes',
       }
     }
-    if (found) return false;
-    return null; // can't determine
-  } catch(e) { return null; }
+  };
 }
 
 // ── FILTERS ───────────────────────────────────────────────────
 function getFilters() {
-  return {
-    open:         document.getElementById('filter-open').checked,
-    alcohol:      document.getElementById('filter-alcohol').checked,
-    bar:          document.getElementById('filter-bar').checked,
-    vegan:        document.getElementById('filter-vegan').checked,
-    vegetarian:   document.getElementById('filter-vegetarian').checked,
-    outdoor:      document.getElementById('filter-outdoor').checked,
-    delivery:     document.getElementById('filter-delivery').checked,
-    takeaway:     document.getElementById('filter-takeaway').checked,
-  };
+  const cfg = TAB_CONFIG[currentTab];
+  const out = {};
+  cfg.filters.forEach(f => {
+    const el = document.getElementById(`filter-${f.id}`);
+    if (el) out[f.id] = el.checked;
+  });
+  return out;
 }
 
 function applyFiltersAndSort() {
   if (!allResults.length) return;
-  const f = getFilters();
+  const f    = getFilters();
   const sort = document.getElementById('sortSelect').value;
 
-  // Sync chip styles
+  // Sync chips
   Object.keys(f).forEach(key => {
     document.getElementById(`chip-${key}`)?.classList.toggle('active', f[key]);
   });
@@ -636,49 +1007,27 @@ function applyFiltersAndSort() {
     const food = feat.food_and_drink || {};
     const svc  = feat.services || {};
     const am   = feat.amenities || {};
-    if (f.open         && isOpen(p) !== true)                  return false;
-    if (f.alcohol      && !food.alcohol)                       return false;
-    if (f.bar          && !food.bar)                           return false;
-    if (f.vegan        && !food.menus?.has_vegan)              return false;
-    if (f.vegetarian   && !food.menus?.has_vegetarian)         return false;
-    if (f.outdoor      && !am.outdoor_seating)                 return false;
-    if (f.delivery     && !svc.delivery)                       return false;
-    if (f.takeaway     && !svc.takeout)                        return false;
+    if (f.open        && p.hours?.open_now !== true) return false;
+    if (f.alcohol     && !food.alcohol)              return false;
+    if (f.bar         && !food.bar)                  return false;
+    if (f.vegan       && !food.menus?.has_vegan)     return false;
+    if (f.vegetarian  && !food.menus?.has_vegetarian)return false;
+    if (f.outdoor     && !am.outdoor_seating)        return false;
+    if (f.delivery    && !svc.delivery)              return false;
+    if (f.takeaway    && !svc.takeout)               return false;
+    if (f.wifi        && !am.wifi)                   return false;
+    if (f.parking     && !am.parking?.parking_available) return false;
+    if (f.free        && !am.free)                   return false;
     return true;
   });
 
   list.sort((a, b) => {
-    if (sort === 'distance') return (a.distance||0) - (b.distance||0);
-    if (sort === 'rating')   return (b.rating||0)   - (a.rating||0);
+    if (sort === 'distance') return (a.distance||99999) - (b.distance||99999);
     if (sort === 'name')     return (a.name||'').localeCompare(b.name||'');
     return 0;
   });
 
   renderResults(list);
-}
-
-// ── HELPERS ───────────────────────────────────────────────────
-function isOpen(p) { return p.hours?.open_now ?? null; } // true=open, false=closed, null=unknown
-
-function fmtDist(m) {
-  if (m == null) return '';
-  return m < 1000 ? `${m}m` : `${(m/1000).toFixed(1)}km`;
-}
-
-function priceStr(n) {
-  return n ? ['','$','$$','$$$','$$$$'][n] || '' : '';
-}
-
-function ratingCls(r) {
-  if (!r) return 'none';
-  if (r >= 8) return 'high';
-  if (r >= 6) return 'mid';
-  return 'low';
-}
-
-function fmtAddr(loc) {
-  if (!loc) return '';
-  return [loc.address, loc.locality].filter(Boolean).join(', ');
 }
 
 // ── RENDER ────────────────────────────────────────────────────
@@ -698,59 +1047,178 @@ function renderResults(places) {
 
   document.getElementById('countLabel').innerHTML =
     `<strong>${places.length}</strong> place${places.length !== 1 ? 's' : ''} found` +
-    (active ? ` &middot; ${active} filter${active > 1 ? 's' : ''} active` : '');
+    (active ? ` · ${active} filter${active > 1 ? 's' : ''} active` : '');
 
-  document.getElementById('resultsList').innerHTML = places.map((p, i) => {
+  const cfg = TAB_CONFIG[currentTab];
+
+  document.getElementById('resultsList').innerHTML = places.map(p => {
+    const t    = p.tags || {};
     const feat = p.features || {};
     const food = feat.food_and_drink || {};
     const svc  = feat.services || {};
     const am   = feat.amenities || {};
 
-    // Build tags
-    const tags = [];
-    if (isOpen(p) === true)              tags.push(['tag-open',       '✅ Open now']);
-    else if (isOpen(p) === false)        tags.push(['tag-closed',     '🔴 Closed']);
+    const tagList = [];
+    if (p.hours?.open_now === true)        tagList.push(['tag-open',  '✅ Open']);
+    if (p.hours?.open_now === false)       tagList.push(['tag-closed','🔴 Closed']);
     const pr = priceStr(p.price);
-    if (pr)                              tags.push(['tag-price',      pr]);
-    if (food.alcohol)                    tags.push(['tag-alcohol',    '🍷 Alcohol']);
-    if (food.bar)                        tags.push(['tag-bar',        '🍺 Bar']);
-    if (food.menus?.has_vegan)           tags.push(['tag-vegan',      '🌱 Vegan']);
-    if (food.menus?.has_vegetarian)      tags.push(['tag-vegetarian', '🥦 Vegetarian']);
-    if (food.menus?.has_gluten_free)     tags.push(['tag-gluten',     '🌾 Gluten-free']);
-    if (svc.dine_in?.reservations)       tags.push(['tag-reserve',    '📅 Reservations']);
-    if (svc.delivery)                    tags.push(['tag-delivery',   '🛵 Delivery']);
-    if (svc.takeout)                     tags.push(['tag-takeaway',   '🥡 Takeaway']);
-    if (am.outdoor_seating)              tags.push(['tag-outdoor',    '🌿 Outdoor']);
-    if (am.wifi)                         tags.push(['tag-wifi',       '📶 WiFi']);
-    if (am.parking?.parking_available)   tags.push(['tag-parking',    '🅿️ Parking']);
-    if (am.live_music)                   tags.push(['tag-live',       '🎵 Live music']);
+    if (pr)                                tagList.push(['tag-price', pr]);
+    if (food.alcohol)                      tagList.push(['tag-alcohol','🍷 Alcohol']);
+    if (food.bar)                          tagList.push(['tag-bar',   '🍺 Bar']);
+    if (food.menus?.has_vegan)             tagList.push(['tag-vegan', '🌱 Vegan']);
+    if (food.menus?.has_vegetarian)        tagList.push(['tag-vegetarian','🥦 Veg']);
+    if (svc.delivery)                      tagList.push(['tag-delivery','🛵 Delivery']);
+    if (svc.takeout)                       tagList.push(['tag-takeaway','🥡 Takeaway']);
+    if (am.outdoor_seating)               tagList.push(['tag-outdoor','🌿 Outdoor']);
+    if (am.wifi)                           tagList.push(['tag-wifi',  '📶 WiFi']);
+    if (am.parking?.parking_available)    tagList.push(['tag-parking','🅿️ Parking']);
+    if (am.free || t.fee === 'no')        tagList.push(['tag-free',  '🆓 Free']);
+    // Stays specific
+    if (t.tourism === 'hotel')             tagList.push(['tag-hotel', '🏨 Hotel']);
+    if (t.tourism === 'hostel')            tagList.push(['tag-hostel','🛏️ Hostel']);
+    if (t.tourism === 'camp_site')         tagList.push(['tag-camping','⛺ Camping']);
+    if (t.stars)                           tagList.push(['tag-stars', '⭐'.repeat(Math.min(parseInt(t.stars||0),5))]);
+    // Rec specific
+    if (t.natural === 'beach')             tagList.push(['tag-swim',  '🏖️ Beach']);
+    if (t.leisure === 'nature_reserve')    tagList.push(['tag-hiking','🌿 Reserve']);
+    if (t.tourism === 'viewpoint')         tagList.push(['tag-scenic','📸 Viewpoint']);
 
-    const r = p.rating;
-    const ratingHTML = r
-      ? `<span class="card-rating ${ratingCls(r)}">★ ${r.toFixed(1)}</span>`
-      : ``;
+    const cuisine = t.cuisine ? t.cuisine.replace(/_/g,' ').replace(/;/g,', ') : '';
+    const cat     = amenityLabel(t.amenity || t.tourism || t.leisure || t.natural || '');
+    const addr    = [p.location?.address, p.location?.locality].filter(Boolean).join(', ');
+    const meta    = [cuisine || cat, addr].filter(Boolean);
 
-    const cat = p.categories?.[0]?.name || '';
-    const addr = fmtAddr(p.location);
+    const emoji   = cfg.thumbEmoji(p);
+    const gmUrl   = `https://www.google.com/maps?q=${encodeURIComponent(p.name)}+${p.lat},${p.lng}`;
+    const linkUrl = p.website || gmUrl;
 
-    const osmUrl = p.website || `https://www.openstreetmap.org/${p.osm_type}/${p.osm_id}`;
-    return `<a class="restaurant-card" href="${osmUrl}" target="_blank" rel="noopener">
-      <div class="card-rank">${i + 1}</div>
+    return `<a class="place-card" href="${linkUrl}" target="_blank" rel="noopener">
+      <div class="card-thumb ${cfg.thumbClass}">
+        <span class="card-thumb-emoji">${emoji}</span>
+        <span class="card-thumb-label">${cat || currentTab}</span>
+      </div>
       <div class="card-body">
         <div class="card-top">
           <div class="card-name">${p.name}</div>
-          ${ratingHTML}
+          <div class="card-dist">${fmtDist(p.distance)}</div>
         </div>
-        <div class="card-meta">
-          ${cat ? `<span>${cat}</span>` : ''}
-          ${cat && addr ? '<span class="sep">·</span>' : ''}
-          ${addr ? `<span>${addr}</span>` : ''}
+        ${meta.length ? `<div class="card-meta">${meta.map((m,i) => i ? `<span class="card-sep">·</span><span>${m}</span>` : `<span>${m}</span>`).join('')}</div>` : ''}
+        ${tagList.length ? `<div class="card-tags">${tagList.map(([cls,txt]) => `<span class="tag ${cls}">${txt}</span>`).join('')}</div>` : ''}
+        <div class="card-gmaps" onclick="e=>e.stopPropagation()">
+          <span>🗺️</span> <span style="text-decoration:underline" onclick="event.preventDefault();event.stopPropagation();window.open('${gmUrl}','_blank')">Open in Google Maps</span>
         </div>
-        ${tags.length ? `<div class="card-tags">${tags.map(([cls, txt]) => `<span class="tag ${cls}">${txt}</span>`).join('')}</div>` : ''}
       </div>
-      <div class="card-dist">${fmtDist(p.distance)}</div>
     </a>`;
   }).join('');
+}
+
+// ── EMOJI HELPERS ─────────────────────────────────────────────
+function foodEmoji(p) {
+  const t = p.tags || {};
+  const c = (t.cuisine || '').toLowerCase();
+  if (c.includes('sushi') || c.includes('japanese')) return '🍣';
+  if (c.includes('pizza'))   return '🍕';
+  if (c.includes('burger'))  return '🍔';
+  if (c.includes('indian'))  return '🫕';
+  if (c.includes('chinese')) return '🍜';
+  if (c.includes('thai'))    return '🍱';
+  if (c.includes('mexican')) return '🌮';
+  if (c.includes('seafood')) return '🐟';
+  if (c.includes('steak'))   return '🥩';
+  if (t.amenity === 'bar' || t.amenity === 'pub') return '🍺';
+  if (t.amenity === 'cafe')     return '☕';
+  if (t.amenity === 'fast_food')return '🍟';
+  return '🍽️';
+}
+function staysEmoji(p) {
+  const t = p.tags || {};
+  if (t.tourism === 'hotel')       return '🏨';
+  if (t.tourism === 'hostel')      return '🛏️';
+  if (t.tourism === 'camp_site')   return '⛺';
+  if (t.tourism === 'caravan_site')return '🚐';
+  if (t.tourism === 'guest_house') return '🏡';
+  if (t.tourism === 'chalet')      return '🏔️';
+  if (t.tourism === 'apartment')   return '🏢';
+  return '🏠';
+}
+function recEmoji(p) {
+  const t = p.tags || {};
+  if (t.natural === 'beach')              return '🏖️';
+  if (t.amenity === 'swimming_pool')      return '🏊';
+  if (t.leisure === 'swimming_area')      return '🏊';
+  if (t.tourism === 'viewpoint')          return '📸';
+  if (t.leisure === 'golf_course')        return '⛳';
+  if (t.leisure === 'skatepark')          return '🛹';
+  if (t.leisure === 'playground')         return '🛝';
+  if (t.amenity === 'cinema')             return '🎬';
+  if (t.amenity === 'theatre')            return '🎭';
+  if (t.tourism === 'museum')             return '🏛️';
+  if (t.leisure === 'nature_reserve')     return '🌿';
+  if (t.leisure === 'park')               return '🌳';
+  if (t.amenity === 'sports_centre')      return '🏋️';
+  return '🎯';
+}
+
+// ── MISC HELPERS ──────────────────────────────────────────────
+function amenityLabel(a) {
+  const map = {
+    restaurant:'Restaurant', cafe:'Café', bar:'Bar', pub:'Pub',
+    fast_food:'Fast Food', food_court:'Food Court', biergarten:'Beer Garden',
+    hotel:'Hotel', motel:'Motel', hostel:'Hostel', guest_house:'Guest House',
+    camp_site:'Camping', caravan_site:'Holiday Park', chalet:'Chalet', apartment:'Apartment',
+    swimming_pool:'Pool', sports_centre:'Sports Centre', golf_course:'Golf Course',
+    cinema:'Cinema', theatre:'Theatre', museum:'Museum', arts_centre:'Arts Centre',
+    playground:'Playground', skatepark:'Skate Park',
+    park:'Park', garden:'Garden', nature_reserve:'Nature Reserve',
+    beach:'Beach', viewpoint:'Viewpoint', picnic_site:'Picnic Site',
+    fitness_centre:'Fitness Centre',
+  };
+  return map[a] || '';
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function fmtDist(m) {
+  if (m == null) return '';
+  return m < 1000 ? `${m}m` : `${(m/1000).toFixed(1)}km`;
+}
+
+function priceStr(n) { return n ? ['','$','$$','$$$','$$$$'][n]||'' : ''; }
+
+function osmPrice(tags) {
+  const pr = tags.price_range || tags['price:range'] || '';
+  if (pr) return Math.min(4, pr.replace(/[^$]/g,'').length) || null;
+  return null;
+}
+
+function guessOpenNow(ohStr) {
+  if (!ohStr) return null;
+  if (ohStr.trim().toLowerCase() === '24/7') return true;
+  try {
+    const now = new Date();
+    const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const todayAbbr = dayNames[now.getDay()];
+    const currentMins = now.getHours()*60 + now.getMinutes();
+    const rangePattern = /([A-Z][a-z])(?:-([A-Z][a-z]))?\s+(\d{2}):(\d{2})-(\d{2}):(\d{2})/g;
+    let match, found = false;
+    while ((match = rangePattern.exec(ohStr)) !== null) {
+      const [, startDay, endDay, sh, sm, eh, em] = match;
+      const si = dayNames.indexOf(startDay), ei = endDay ? dayNames.indexOf(endDay) : si;
+      const ti = dayNames.indexOf(todayAbbr);
+      const inDay = si <= ei ? (ti >= si && ti <= ei) : (ti >= si || ti <= ei);
+      if (inDay) {
+        found = true;
+        const open = parseInt(sh)*60+parseInt(sm), close = parseInt(eh)*60+parseInt(em);
+        if (currentMins >= open && currentMins < close) return true;
+      }
+    }
+    return found ? false : null;
+  } catch(e) { return null; }
 }
 
 // ── UI STATE ──────────────────────────────────────────────────
@@ -762,22 +1230,19 @@ function setLoading(v) {
     document.getElementById('emptyState').classList.remove('visible');
   }
 }
-
 function showError(msg) {
   const el = document.getElementById('errorMsg');
-  el.textContent = msg;
-  el.classList.add('visible');
+  el.textContent = msg; el.classList.add('visible');
 }
-
-function clearError() {
-  document.getElementById('errorMsg').classList.remove('visible');
-}
-
+function clearError() { document.getElementById('errorMsg').classList.remove('visible'); }
 function showEmpty() {
   document.getElementById('emptyState').classList.add('visible');
   document.getElementById('resultsArea').style.display = 'block';
   document.getElementById('resultsList').innerHTML = '';
 }
+
+// ── INIT ──────────────────────────────────────────────────────
+switchTab('food');
 </script>
 </body>
 </html>
