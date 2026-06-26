@@ -6,368 +6,165 @@
 <title>NZ Eats — Restaurant Finder</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --ink:       #1a1410;
-    --paper:     #faf7f2;
-    --warm:      #f2ece0;
-    --border:    #e0d8cc;
-    --muted:     #9a8f82;
-    --accent:    #c0392b;
-    --accent2:   #e67e22;
-    --good:      #27ae60;
-    --surface:   #ffffff;
-    --radius:    10px;
+    --ink: #1a1410; --paper: #faf7f2; --warm: #f2ece0;
+    --border: #e0d8cc; --muted: #9a8f82; --accent: #c0392b;
+    --accent2: #e67e22; --good: #27ae60; --surface: #fff; --r: 10px;
   }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100vh;
-  }
+  header { background: var(--ink); color: var(--paper); padding: 2rem 1.5rem 1.5rem; text-align: center; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: 2.8rem; letter-spacing: -0.02em; }
+  header h1 em { font-style: italic; color: var(--accent2); }
+  header p { margin-top: 0.4rem; color: #a09080; font-size: 0.9rem; }
 
-  /* HEADER */
-  header {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 2.5rem 1.5rem 2rem;
-    text-align: center;
-  }
-
-  header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 3rem;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-
-  header h1 em {
-    font-style: italic;
-    color: var(--accent2);
-  }
-
-  header p {
-    margin-top: 0.5rem;
-    color: #a09080;
-    font-size: 0.95rem;
-    font-weight: 300;
-  }
-
-  /* SEARCH PANEL */
   .search-panel {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 1.25rem 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 100;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
-
-  .search-row {
-    max-width: 900px;
-    margin: 0 auto;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-  }
-
+  .search-row { max-width: 920px; margin: 0 auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
-
   .field input, .field select {
-    background: var(--warm);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 9px 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--ink);
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
+    background: var(--warm); border: 1px solid var(--border); border-radius: var(--r);
+    padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+    color: var(--ink); outline: none; transition: border-color 0.2s; appearance: none;
   }
-
   .field input:focus, .field select:focus { border-color: var(--accent); }
   .field input::placeholder { color: var(--muted); }
-
-  .field-location { flex: 2; min-width: 180px; }
+  .field-location { flex: 2; min-width: 200px; position: relative; }
   .field-radius { flex: 0 0 110px; }
   .field-cuisine { flex: 1; min-width: 130px; }
   .field-sort { flex: 1; min-width: 130px; }
 
-  .btn-search {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    padding: 9px 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s, transform 0.1s;
-    align-self: flex-end;
-  }
-  .btn-search:hover { background: #a93226; }
-  .btn-search:active { transform: scale(0.97); }
-  .btn-search:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-locate {
-    background: var(--warm);
-    color: var(--ink);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 9px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    cursor: pointer;
-    white-space: nowrap;
-    align-self: flex-end;
-    transition: border-color 0.2s;
-  }
-  .btn-locate:hover { border-color: var(--accent); }
-
-  /* FILTERS */
-  .filters-bar {
-    max-width: 900px;
-    margin: 0.75rem auto 0;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .filter-chip {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--warm);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
-    user-select: none;
-    color: var(--muted);
-  }
-
-  .filter-chip input[type=checkbox] { display: none; }
-
-  .filter-chip.active {
-    background: var(--ink);
-    border-color: var(--ink);
-    color: white;
-  }
-
-  .filter-chip:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
-
-  /* SUGGESTIONS */
   .suggestions {
-    position: absolute;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    z-index: 200;
-    min-width: 260px;
-    overflow: hidden;
-    margin-top: 2px;
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    z-index: 999; margin-top: 4px; overflow: hidden;
   }
-
   .suggestion-item {
-    padding: 10px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.12s;
+    padding: 10px 14px; font-size: 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border); transition: background 0.1s;
+    display: flex; align-items: center; gap: 8px;
   }
   .suggestion-item:last-child { border-bottom: none; }
   .suggestion-item:hover { background: var(--warm); }
+  .suggestion-item .s-icon { color: var(--muted); font-size: 12px; }
 
-  /* MAIN */
-  .main { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
-
-  /* STATUS BAR */
-  .status-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;
+  .btn-search {
+    background: var(--accent); color: white; border: none; border-radius: var(--r);
+    padding: 9px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 600; cursor: pointer; white-space: nowrap; align-self: flex-end;
+    transition: background 0.2s, transform 0.1s;
   }
+  .btn-search:hover { background: #a93226; }
+  .btn-search:active { transform: scale(0.97); }
+  .btn-search:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  .status-bar .count { font-size: 14px; color: var(--muted); }
-  .status-bar .count strong { color: var(--ink); }
+  .btn-locate {
+    background: var(--warm); color: var(--ink); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 9px 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer; white-space: nowrap; align-self: flex-end;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-locate:hover { border-color: var(--accent); background: #fde8e6; }
+  .btn-locate.loading-gps { opacity: 0.6; cursor: not-allowed; }
 
-  /* LOADING */
+  .filters-bar { max-width: 920px; margin: 0.75rem auto 0; display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-chip {
+    display: flex; align-items: center; gap: 5px; background: var(--warm);
+    border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px;
+    font-size: 12px; cursor: pointer; transition: all 0.15s; user-select: none; color: var(--muted);
+  }
+  .filter-chip input[type=checkbox] { display: none; }
+  .filter-chip.active { background: var(--ink); border-color: var(--ink); color: white; }
+  .filter-chip:hover:not(.active) { border-color: var(--ink); color: var(--ink); }
+
+  .main { max-width: 920px; margin: 0 auto; padding: 1.5rem; }
+
+  .error-msg {
+    background: #fdecea; border: 1px solid #f5c2c0; border-radius: var(--r);
+    padding: 1rem 1.25rem; color: #c0392b; font-size: 14px; display: none; margin-bottom: 1rem;
+  }
+  .error-msg.visible { display: block; }
+
   .loading { display: none; text-align: center; padding: 4rem 0; color: var(--muted); }
   .loading.visible { display: block; }
-
   .loading-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 1rem; }
   .loading-dots span {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent);
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
     animation: bounce 1s ease-in-out infinite;
   }
   .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
   .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-8px); opacity: 1; } }
 
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); opacity: 0.4; }
-    50% { transform: translateY(-8px); opacity: 1; }
-  }
-
-  /* ERROR */
-  .error-msg {
-    background: #fdecea; border: 1px solid #f5c2c0;
-    border-radius: var(--radius); padding: 1rem 1.25rem;
-    color: #c0392b; font-size: 14px; display: none; margin-bottom: 1rem;
-  }
-  .error-msg.visible { display: block; }
-
-  /* EMPTY */
-  .empty { display: none; text-align: center; padding: 4rem 0; color: var(--muted); }
+  .empty { display: none; text-align: center; padding: 3rem 0; color: var(--muted); }
   .empty.visible { display: block; }
-  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-  .empty h3 { font-family: 'DM Serif Display', serif; font-size: 1.4rem; color: var(--ink); margin-bottom: 0.5rem; }
+  .empty h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--ink); margin: 0.5rem 0; }
 
-  /* RESULTS */
-  .results-list { display: flex; flex-direction: column; gap: 1px; }
-
-  .restaurant-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.1rem 1.25rem;
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    transition: box-shadow 0.15s, transform 0.15s;
-    margin-bottom: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .restaurant-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    transform: translateY(-1px);
-  }
-
-  .card-rank {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.4rem;
-    color: var(--border);
-    min-width: 28px;
-    line-height: 1;
-    padding-top: 2px;
-  }
-
-  .card-body { flex: 1; min-width: 0; }
-
-  .card-top { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
-
-  .card-name {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.15rem;
-    line-height: 1.2;
-  }
-
-  .card-rating {
-    display: flex; align-items: center; gap: 4px;
-    background: var(--good);
-    color: white;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .card-rating.mid { background: var(--accent2); }
-  .card-rating.low { background: var(--muted); }
-  .card-rating.none { background: var(--border); color: var(--muted); }
-
-  .card-meta {
-    display: flex; align-items: center; gap: 8px;
-    flex-wrap: wrap; margin-top: 4px;
-    font-size: 13px; color: var(--muted);
-  }
-
-  .card-meta .sep { color: var(--border); }
-
-  .card-address { font-size: 13px; color: var(--muted); margin-top: 4px; }
-
-  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
-
-  .tag {
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 500;
-    border: 1px solid;
-  }
-
-  .tag-alcohol    { background: #fff3e0; color: #e67e22; border-color: #f0c080; }
-  .tag-bar        { background: #f3e5f5; color: #8e44ad; border-color: #d7b8e8; }
-  .tag-reserve    { background: #e8f5e9; color: #27ae60; border-color: #a8d8b0; }
-  .tag-vegan      { background: #e8f5e9; color: #2e7d32; border-color: #a8d8b0; }
-  .tag-vegetarian { background: #f1f8e9; color: #558b2f; border-color: #c5e1a5; }
-  .tag-open       { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
-  .tag-closed     { background: #fdecea; color: #c0392b; border-color: #f5c2c0; }
-  .tag-price      { background: var(--warm); color: var(--ink); border-color: var(--border); }
-  .tag-outdoor    { background: #e0f7fa; color: #00838f; border-color: #80deea; }
-  .tag-delivery   { background: #fce4ec; color: #c2185b; border-color: #f48fb1; }
-  .tag-takeaway   { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
-  .tag-wifi       { background: #e8eaf6; color: #3949ab; border-color: #9fa8da; }
-  .tag-parking    { background: #efebe9; color: #5d4037; border-color: #bcaaa4; }
-  .tag-live       { background: #fce4ec; color: #ad1457; border-color: #f48fb1; }
-  .tag-gluten     { background: #f9fbe7; color: #827717; border-color: #e6ee9c; }
-
-  .card-dist {
-    font-size: 12px;
-    color: var(--muted);
-    white-space: nowrap;
-    padding-top: 3px;
-    min-width: 50px;
-    text-align: right;
-  }
-
-  /* HERO EMPTY STATE */
-  .hero-empty {
-    text-align: center;
-    padding: 5rem 1rem;
-  }
-
-  .hero-empty h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 2rem;
-    color: var(--ink);
-    margin-bottom: 0.5rem;
-  }
-
-  .hero-empty p { color: var(--muted); font-size: 0.95rem; }
-
-  .hero-suggestions {
-    display: flex; gap: 8px; flex-wrap: wrap;
-    justify-content: center; margin-top: 1.5rem;
-  }
-
+  .hero-empty { text-align: center; padding: 4rem 1rem; }
+  .hero-empty h2 { font-family: 'DM Serif Display', serif; font-size: 2rem; margin-bottom: 0.5rem; }
+  .hero-empty p { color: var(--muted); }
+  .hero-suggestions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 1.5rem; }
   .hero-chip {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 7px 16px;
-    font-size: 14px; cursor: pointer;
-    transition: all 0.15s;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 7px 16px; font-size: 14px; cursor: pointer; transition: all 0.15s;
   }
-
   .hero-chip:hover { border-color: var(--accent); color: var(--accent); }
 
+  .status-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+  .status-bar .count { font-size: 14px; color: var(--muted); }
+  .status-bar .count strong { color: var(--ink); }
+
+  .restaurant-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+    padding: 1rem 1.25rem; display: flex; gap: 1rem; align-items: flex-start;
+    transition: box-shadow 0.15s, transform 0.15s; margin-bottom: 8px;
+    cursor: pointer; text-decoration: none; color: inherit;
+  }
+  .restaurant-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+
+  .card-rank { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--border); min-width: 26px; line-height: 1; padding-top: 3px; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-top { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+  .card-name { font-family: 'DM Serif Display', serif; font-size: 1.1rem; line-height: 1.25; }
+  .card-rating {
+    display: flex; align-items: center; gap: 3px; padding: 2px 8px;
+    border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+  }
+  .card-rating.high { background: var(--good); color: white; }
+  .card-rating.mid { background: var(--accent2); color: white; }
+  .card-rating.low { background: var(--muted); color: white; }
+  .card-rating.none { background: var(--border); color: var(--muted); }
+  .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; font-size: 13px; color: var(--muted); }
+  .card-meta .sep { color: var(--border); }
+  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+  .tag { border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 500; border: 1px solid; }
+  .tag-open       { background:#e3f2fd; color:#1565c0; border-color:#90caf9; }
+  .tag-closed     { background:#fdecea; color:#c0392b; border-color:#f5c2c0; }
+  .tag-price      { background:var(--warm); color:var(--ink); border-color:var(--border); }
+  .tag-alcohol    { background:#fff3e0; color:#e67e22; border-color:#f0c080; }
+  .tag-bar        { background:#f3e5f5; color:#8e44ad; border-color:#d7b8e8; }
+  .tag-reserve    { background:#e8f5e9; color:#27ae60; border-color:#a8d8b0; }
+  .tag-vegan      { background:#e8f5e9; color:#2e7d32; border-color:#a8d8b0; }
+  .tag-vegetarian { background:#f1f8e9; color:#558b2f; border-color:#c5e1a5; }
+  .tag-outdoor    { background:#e0f7fa; color:#00838f; border-color:#80deea; }
+  .tag-delivery   { background:#fce4ec; color:#c2185b; border-color:#f48fb1; }
+  .tag-takeaway   { background:#fff8e1; color:#f57f17; border-color:#ffe082; }
+  .tag-wifi       { background:#e8eaf6; color:#3949ab; border-color:#9fa8da; }
+  .tag-parking    { background:#efebe9; color:#5d4037; border-color:#bcaaa4; }
+  .tag-live       { background:#fce4ec; color:#ad1457; border-color:#f48fb1; }
+  .tag-gluten     { background:#f9fbe7; color:#827717; border-color:#e6ee9c; }
+  .card-dist { font-size: 12px; color: var(--muted); white-space: nowrap; padding-top: 3px; min-width: 48px; text-align: right; flex-shrink: 0; }
+
   @media (max-width: 600px) {
-    header h1 { font-size: 2.2rem; }
-    .field-radius { flex: 0 0 90px; }
+    header h1 { font-size: 2rem; }
     .card-rank { display: none; }
+    .field-radius { flex: 0 0 88px; }
   }
 </style>
 </head>
@@ -380,10 +177,10 @@
 
 <div class="search-panel">
   <div class="search-row">
-    <div class="field field-location" style="position:relative">
+    <div class="field field-location">
       <label>Location</label>
       <input type="text" id="locationInput" placeholder="Auckland CBD, Queenstown, Ponsonby…" autocomplete="off">
-      <div class="suggestions" id="suggestions" style="display:none"></div>
+      <div class="suggestions" id="suggestions"></div>
     </div>
     <div class="field field-radius">
       <label>Radius</label>
@@ -406,7 +203,7 @@
       <label>Cuisine</label>
       <select id="cuisineSelect">
         <option value="">Any cuisine</option>
-        <option value="13065">🍽️ Restaurant (any)</option>
+        <option value="13065">🍽️ Restaurant</option>
         <option value="13064">☕ Café</option>
         <option value="13145">🍣 Japanese / Sushi</option>
         <option value="13236">🍕 Pizza</option>
@@ -419,7 +216,7 @@
         <option value="13049">🥩 Steakhouse</option>
         <option value="13084">🐟 Seafood</option>
         <option value="13025">🍺 Bar / Pub</option>
-        <option value="13032">☕ Brunch / Breakfast</option>
+        <option value="13032">🍳 Brunch</option>
       </select>
     </div>
     <div class="field field-sort">
@@ -430,63 +227,24 @@
         <option value="name">A → Z</option>
       </select>
     </div>
-    <button class="btn-locate" onclick="useGPS()" title="Use my location">📍 GPS</button>
+    <button class="btn-locate" id="gpsBtn" onclick="useGPS()">📍 GPS</button>
     <button class="btn-search" id="searchBtn" onclick="doSearch()">Search</button>
   </div>
 
   <div class="filters-bar">
-    <label class="filter-chip" id="chip-open">
-      <input type="checkbox" id="filter-open" onchange="applyFiltersAndSort()">
-      ✅ Open now
-    </label>
-    <label class="filter-chip" id="chip-alcohol">
-      <input type="checkbox" id="filter-alcohol" onchange="applyFiltersAndSort()">
-      🍷 Serves alcohol
-    </label>
-    <label class="filter-chip" id="chip-bar">
-      <input type="checkbox" id="filter-bar" onchange="applyFiltersAndSort()">
-      🍺 Has a bar
-    </label>
-    <label class="filter-chip" id="chip-reservations">
-      <input type="checkbox" id="filter-reservations" onchange="applyFiltersAndSort()">
-      📅 Takes reservations
-    </label>
-    <label class="filter-chip" id="chip-vegan">
-      <input type="checkbox" id="filter-vegan" onchange="applyFiltersAndSort()">
-      🌱 Vegan options
-    </label>
-    <label class="filter-chip" id="chip-vegetarian">
-      <input type="checkbox" id="filter-vegetarian" onchange="applyFiltersAndSort()">
-      🥦 Vegetarian options
-    </label>
-    <label class="filter-chip" id="chip-outdoor">
-      <input type="checkbox" id="filter-outdoor" onchange="applyFiltersAndSort()">
-      🌿 Outdoor seating
-    </label>
-    <label class="filter-chip" id="chip-delivery">
-      <input type="checkbox" id="filter-delivery" onchange="applyFiltersAndSort()">
-      🛵 Delivery
-    </label>
-    <label class="filter-chip" id="chip-takeaway">
-      <input type="checkbox" id="filter-takeaway" onchange="applyFiltersAndSort()">
-      🥡 Takeaway
-    </label>
-    <label class="filter-chip" id="chip-wifi">
-      <input type="checkbox" id="filter-wifi" onchange="applyFiltersAndSort()">
-      📶 Free WiFi
-    </label>
-    <label class="filter-chip" id="chip-parking">
-      <input type="checkbox" id="filter-parking" onchange="applyFiltersAndSort()">
-      🅿️ Parking nearby
-    </label>
-    <label class="filter-chip" id="chip-live">
-      <input type="checkbox" id="filter-live" onchange="applyFiltersAndSort()">
-      🎵 Live music
-    </label>
-    <label class="filter-chip" id="chip-gluten">
-      <input type="checkbox" id="filter-gluten" onchange="applyFiltersAndSort()">
-      🌾 Gluten-free options
-    </label>
+    <label class="filter-chip" id="chip-open"><input type="checkbox" id="filter-open" onchange="applyFiltersAndSort()">✅ Open now</label>
+    <label class="filter-chip" id="chip-alcohol"><input type="checkbox" id="filter-alcohol" onchange="applyFiltersAndSort()">🍷 Alcohol</label>
+    <label class="filter-chip" id="chip-bar"><input type="checkbox" id="filter-bar" onchange="applyFiltersAndSort()">🍺 Bar</label>
+    <label class="filter-chip" id="chip-reservations"><input type="checkbox" id="filter-reservations" onchange="applyFiltersAndSort()">📅 Reservations</label>
+    <label class="filter-chip" id="chip-vegan"><input type="checkbox" id="filter-vegan" onchange="applyFiltersAndSort()">🌱 Vegan</label>
+    <label class="filter-chip" id="chip-vegetarian"><input type="checkbox" id="filter-vegetarian" onchange="applyFiltersAndSort()">🥦 Vegetarian</label>
+    <label class="filter-chip" id="chip-outdoor"><input type="checkbox" id="filter-outdoor" onchange="applyFiltersAndSort()">🌿 Outdoor seating</label>
+    <label class="filter-chip" id="chip-delivery"><input type="checkbox" id="filter-delivery" onchange="applyFiltersAndSort()">🛵 Delivery</label>
+    <label class="filter-chip" id="chip-takeaway"><input type="checkbox" id="filter-takeaway" onchange="applyFiltersAndSort()">🥡 Takeaway</label>
+    <label class="filter-chip" id="chip-wifi"><input type="checkbox" id="filter-wifi" onchange="applyFiltersAndSort()">📶 WiFi</label>
+    <label class="filter-chip" id="chip-parking"><input type="checkbox" id="filter-parking" onchange="applyFiltersAndSort()">🅿️ Parking</label>
+    <label class="filter-chip" id="chip-live"><input type="checkbox" id="filter-live" onchange="applyFiltersAndSort()">🎵 Live music</label>
+    <label class="filter-chip" id="chip-gluten"><input type="checkbox" id="filter-gluten" onchange="applyFiltersAndSort()">🌾 Gluten-free</label>
   </div>
 </div>
 
@@ -497,9 +255,9 @@
     Finding restaurants…
   </div>
   <div class="empty" id="emptyState">
-    <div class="empty-icon">🔍</div>
+    <div style="font-size:2.5rem;margin-bottom:.5rem">🔍</div>
     <h3>No matches found</h3>
-    <p>Try removing some filters or expanding the radius.</p>
+    <p>Try removing filters or expanding the radius.</p>
   </div>
 
   <div id="heroEmpty" class="hero-empty">
@@ -508,7 +266,7 @@
     <div class="hero-suggestions">
       <div class="hero-chip" onclick="quickSearch('Auckland CBD')">Auckland CBD</div>
       <div class="hero-chip" onclick="quickSearch('Queenstown')">Queenstown</div>
-      <div class="hero-chip" onclick="quickSearch('Wellington CBD')">Wellington</div>
+      <div class="hero-chip" onclick="quickSearch('Wellington')">Wellington</div>
       <div class="hero-chip" onclick="quickSearch('Christchurch')">Christchurch</div>
       <div class="hero-chip" onclick="quickSearch('Ponsonby')">Ponsonby</div>
       <div class="hero-chip" onclick="quickSearch('Tauranga')">Tauranga</div>
@@ -519,138 +277,174 @@
     <div class="status-bar">
       <div class="count" id="countLabel"></div>
     </div>
-    <div class="results-list" id="resultsList"></div>
+    <div id="resultsList"></div>
   </div>
 </div>
 
 <script>
+// ── CONFIG ────────────────────────────────────────────────────
 const FSQ_KEY = 'KQDRLASHSXLO0A4EBDNFCKFAX3S50ZZULQPXMBE0QIWK1NMS';
 
 let allResults = [];
-let searchLat = null, searchLng = null;
 let suggestTimer = null;
 
-// ─── GEOCODING ────────────────────────────────────────────────
-document.getElementById('locationInput').addEventListener('input', function() {
+// ── AUTOCOMPLETE ──────────────────────────────────────────────
+const locationInput = document.getElementById('locationInput');
+const suggestionsBox = document.getElementById('suggestions');
+
+locationInput.addEventListener('input', function() {
   clearTimeout(suggestTimer);
   const val = this.value.trim();
-  if (val.length < 3) { hideSuggestions(); return; }
-  suggestTimer = setTimeout(() => fetchSuggestions(val), 350);
+  if (val.length < 2) { hideSuggestions(); return; }
+  suggestTimer = setTimeout(() => fetchSuggestions(val), 300);
 });
 
-document.getElementById('locationInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch();
+locationInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { hideSuggestions(); doSearch(); }
+  if (e.key === 'Escape') hideSuggestions();
 });
 
-document.addEventListener('click', e => {
+document.addEventListener('mousedown', e => {
   if (!e.target.closest('.field-location')) hideSuggestions();
 });
 
 async function fetchSuggestions(q) {
   try {
-    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=en&format=json`;
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=en&format=json`;
     const res = await fetch(url);
     const data = await res.json();
-    const results = (data.results || []).filter(r => r.country_code === 'NZ');
-    showSuggestions(results);
-  } catch(e) {}
+    const nzResults = (data.results || []).filter(r => r.country_code === 'NZ');
+    renderSuggestions(nzResults);
+  } catch(e) { hideSuggestions(); }
 }
 
-function showSuggestions(items) {
-  const box = document.getElementById('suggestions');
+function renderSuggestions(items) {
   if (!items.length) { hideSuggestions(); return; }
-  box.innerHTML = '';
+  suggestionsBox.innerHTML = '';
   items.forEach(item => {
+    const label = [item.name, item.admin1].filter(Boolean).join(', ');
     const d = document.createElement('div');
     d.className = 'suggestion-item';
-    d.textContent = [item.name, item.admin1].filter(Boolean).join(', ');
-    d.onclick = () => {
-      document.getElementById('locationInput').value = d.textContent;
+    d.innerHTML = `<span class="s-icon">📍</span> ${label}`;
+    d.addEventListener('mousedown', e => {
+      e.preventDefault(); // prevent blur before click
+      locationInput.value = label;
       hideSuggestions();
-      doSearchWithCoords(item.latitude, item.longitude);
-    };
-    box.appendChild(d);
+      doSearchWithCoords(item.latitude, item.longitude, label);
+    });
+    suggestionsBox.appendChild(d);
   });
-  box.style.display = 'block';
+  suggestionsBox.style.display = 'block';
 }
 
 function hideSuggestions() {
-  document.getElementById('suggestions').style.display = 'none';
+  suggestionsBox.style.display = 'none';
 }
 
+// ── GEOCODE + SEARCH ──────────────────────────────────────────
 async function doSearch() {
-  const q = document.getElementById('locationInput').value.trim();
+  const q = locationInput.value.trim();
   if (!q) return;
   hideSuggestions();
   setLoading(true);
+  clearError();
   try {
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=en&format=json`;
     const res = await fetch(url);
     const data = await res.json();
-    const results = (data.results || []).filter(r => r.country_code === 'NZ');
-    if (!results.length) {
+    const nz = (data.results || []).filter(r => r.country_code === 'NZ');
+    if (!nz.length) {
       showError('Location not found in New Zealand. Try "Auckland CBD" or "Queenstown".');
       setLoading(false);
       return;
     }
-    const item = results[0];
-    doSearchWithCoords(item.latitude, item.longitude);
+    const best = nz[0];
+    const label = [best.name, best.admin1].filter(Boolean).join(', ');
+    locationInput.value = label;
+    doSearchWithCoords(best.latitude, best.longitude, label);
   } catch(e) {
-    showError('Could not find location. Check your connection.');
+    showError('Could not geocode location. Check your connection and try again.');
     setLoading(false);
   }
 }
 
 function quickSearch(name) {
-  document.getElementById('locationInput').value = name;
+  locationInput.value = name;
   doSearch();
 }
 
+// ── GPS ───────────────────────────────────────────────────────
 function useGPS() {
-  if (!navigator.geolocation) { showError('GPS not available on this device.'); return; }
-  setLoading(true);
+  const btn = document.getElementById('gpsBtn');
+  if (!navigator.geolocation) {
+    showError('GPS is not available on this browser.');
+    return;
+  }
+  btn.textContent = '⏳ Locating…';
+  btn.classList.add('loading-gps');
+  btn.disabled = true;
+
   navigator.geolocation.getCurrentPosition(
-    pos => {
-      document.getElementById('locationInput').value = 'My location';
-      doSearchWithCoords(pos.coords.latitude, pos.coords.longitude);
+    async pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      // Reverse geocode to get a place name
+      try {
+        const url = `https://geocoding-api.open-meteo.com/v1/search?name=&count=1&language=en&format=json`;
+        // Use Nominatim reverse geocoding instead
+        const revUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`;
+        const res = await fetch(revUrl);
+        const data = await res.json();
+        const addr = data.address || {};
+        const label = addr.suburb || addr.city_district || addr.town || addr.city || addr.county || 'My location';
+        locationInput.value = label;
+      } catch(e) {
+        locationInput.value = 'My location';
+      }
+      btn.textContent = '📍 GPS';
+      btn.classList.remove('loading-gps');
+      btn.disabled = false;
+      doSearchWithCoords(lat, lng, locationInput.value);
     },
-    () => { showError('Could not get your location. Try typing a suburb instead.'); setLoading(false); }
+    err => {
+      btn.textContent = '📍 GPS';
+      btn.classList.remove('loading-gps');
+      btn.disabled = false;
+      const msg = err.code === 1
+        ? 'Location access denied. Please allow location access in your browser settings.'
+        : 'Could not get your location. Try typing a suburb instead.';
+      showError(msg);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
-// ─── FOURSQUARE SEARCH ────────────────────────────────────────
-async function doSearchWithCoords(lat, lng) {
-  searchLat = lat; searchLng = lng;
+// ── FOURSQUARE ────────────────────────────────────────────────
+async function doSearchWithCoords(lat, lng, label) {
   setLoading(true);
   clearError();
+  document.getElementById('heroEmpty').style.display = 'none';
 
   const radius = document.getElementById('radiusSelect').value;
   const cuisine = document.getElementById('cuisineSelect').value;
 
-  // Build Foursquare Places API request
   const params = new URLSearchParams({
     ll: `${lat},${lng}`,
-    radius: radius,
+    radius,
     limit: 50,
     sort: 'DISTANCE',
-    categories: cuisine || '13065,13032,13025', // restaurants, brunch, bars
-    fields: [
-      'fsq_id','name','location','distance','rating','price',
-      'hours','tastes','features','categories','stats','photos'
-    ].join(',')
+    categories: cuisine || '13065,13032,13025,13064',
+    fields: 'fsq_id,name,location,distance,rating,price,hours,features,categories'
   });
 
   try {
     const res = await fetch(`https://api.foursquare.com/v3/places/search?${params}`, {
-      headers: {
-        'Authorization': FSQ_KEY,
-        'Accept': 'application/json'
-      }
+      headers: { 'Authorization': FSQ_KEY, 'Accept': 'application/json' }
     });
 
+    if (res.status === 401) { showError('Invalid Foursquare API key.'); setLoading(false); return; }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `API error ${res.status}`);
+      throw new Error(err.message || `Foursquare error ${res.status}`);
     }
 
     const data = await res.json();
@@ -662,13 +456,13 @@ async function doSearchWithCoords(lat, lng) {
       applyFiltersAndSort();
     }
   } catch(e) {
-    showError(`Could not fetch restaurants: ${e.message}`);
+    showError(`Could not load restaurants: ${e.message}`);
   }
   setLoading(false);
 }
 
-// ─── FILTERS + SORT ───────────────────────────────────────────
-function getFilterState() {
+// ── FILTERS ───────────────────────────────────────────────────
+function getFilters() {
   return {
     open:         document.getElementById('filter-open').checked,
     alcohol:      document.getElementById('filter-alcohol').checked,
@@ -687,90 +481,78 @@ function getFilterState() {
 }
 
 function applyFiltersAndSort() {
-  const filters = getFilterState();
+  if (!allResults.length) return;
+  const f = getFilters();
   const sort = document.getElementById('sortSelect').value;
 
-  // Update chip active states
-  Object.keys(filters).forEach(key => {
-    const chip = document.getElementById(`chip-${key}`);
-    if (chip) chip.classList.toggle('active', filters[key]);
+  // Sync chip styles
+  Object.keys(f).forEach(key => {
+    document.getElementById(`chip-${key}`)?.classList.toggle('active', f[key]);
   });
 
-  let filtered = allResults.filter(p => {
-    const features = p.features || {};
-    const food = features.food_and_drink || {};
-    const services = features.services || {};
-    const amenities = features.amenities || {};
-
-    if (filters.open         && !isOpenNow(p))                        return false;
-    if (filters.alcohol      && !food.alcohol)                         return false;
-    if (filters.bar          && !food.bar)                             return false;
-    if (filters.reservations && !services.dine_in?.reservations)       return false;
-    if (filters.vegan        && !food.menus?.has_vegan)                return false;
-    if (filters.vegetarian   && !food.menus?.has_vegetarian)           return false;
-    if (filters.outdoor      && !amenities.outdoor_seating)            return false;
-    if (filters.delivery     && !services.delivery)                    return false;
-    if (filters.takeaway     && !services.takeout)                     return false;
-    if (filters.wifi         && !amenities.wifi)                       return false;
-    if (filters.parking      && !amenities.parking?.parking_available) return false;
-    if (filters.live         && !amenities.live_music)                 return false;
-    if (filters.gluten       && !food.menus?.has_gluten_free)          return false;
+  let list = allResults.filter(p => {
+    const feat = p.features || {};
+    const food = feat.food_and_drink || {};
+    const svc  = feat.services || {};
+    const am   = feat.amenities || {};
+    if (f.open         && !isOpen(p))                          return false;
+    if (f.alcohol      && !food.alcohol)                       return false;
+    if (f.bar          && !food.bar)                           return false;
+    if (f.reservations && !svc.dine_in?.reservations)          return false;
+    if (f.vegan        && !food.menus?.has_vegan)              return false;
+    if (f.vegetarian   && !food.menus?.has_vegetarian)         return false;
+    if (f.outdoor      && !am.outdoor_seating)                 return false;
+    if (f.delivery     && !svc.delivery)                       return false;
+    if (f.takeaway     && !svc.takeout)                        return false;
+    if (f.wifi         && !am.wifi)                            return false;
+    if (f.parking      && !am.parking?.parking_available)      return false;
+    if (f.live         && !am.live_music)                      return false;
+    if (f.gluten       && !food.menus?.has_gluten_free)        return false;
     return true;
   });
 
-  // Sort
-  filtered.sort((a, b) => {
-    if (sort === 'distance') return (a.distance || 0) - (b.distance || 0);
-    if (sort === 'rating') return (b.rating || 0) - (a.rating || 0);
-    if (sort === 'name') return (a.name || '').localeCompare(b.name || '');
+  list.sort((a, b) => {
+    if (sort === 'distance') return (a.distance||0) - (b.distance||0);
+    if (sort === 'rating')   return (b.rating||0)   - (a.rating||0);
+    if (sort === 'name')     return (a.name||'').localeCompare(b.name||'');
     return 0;
   });
 
-  renderResults(filtered);
+  renderResults(list);
 }
 
-// ─── HELPERS ──────────────────────────────────────────────────
-function isOpenNow(place) {
-  const hours = place.hours;
-  if (!hours) return false;
-  return hours.open_now === true;
+// ── HELPERS ───────────────────────────────────────────────────
+function isOpen(p) { return p.hours?.open_now === true; }
+
+function fmtDist(m) {
+  if (m == null) return '';
+  return m < 1000 ? `${m}m` : `${(m/1000).toFixed(1)}km`;
 }
 
-function formatDistance(m) {
-  if (!m && m !== 0) return '';
-  if (m < 1000) return `${m}m`;
-  return `${(m / 1000).toFixed(1)}km`;
+function priceStr(n) {
+  return n ? ['','$','$$','$$$','$$$$'][n] || '' : '';
 }
 
-function priceLabel(price) {
-  if (!price) return null;
-  return ['', '$', '$$', '$$$', '$$$$'][price] || null;
-}
-
-function ratingClass(r) {
+function ratingCls(r) {
   if (!r) return 'none';
-  if (r >= 8) return '';
+  if (r >= 8) return 'high';
   if (r >= 6) return 'mid';
   return 'low';
 }
 
-function formatAddress(loc) {
+function fmtAddr(loc) {
   if (!loc) return '';
-  const parts = [loc.address, loc.locality].filter(Boolean);
-  return parts.join(', ');
+  return [loc.address, loc.locality].filter(Boolean).join(', ');
 }
 
-function getCategoryName(place) {
-  const cats = place.categories;
-  if (!cats || !cats.length) return '';
-  return cats[0].name || '';
-}
-
-// ─── RENDER ───────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────
 function renderResults(places) {
   document.getElementById('heroEmpty').style.display = 'none';
   document.getElementById('resultsArea').style.display = 'block';
   document.getElementById('emptyState').classList.remove('visible');
+
+  const f = getFilters();
+  const active = Object.values(f).filter(Boolean).length;
 
   if (!places.length) {
     showEmpty();
@@ -778,59 +560,44 @@ function renderResults(places) {
     return;
   }
 
-  const filters = getFilterState();
-  const activeFilters = Object.values(filters).filter(Boolean).length;
-
   document.getElementById('countLabel').innerHTML =
     `<strong>${places.length}</strong> place${places.length !== 1 ? 's' : ''} found` +
-    (activeFilters ? ` · ${activeFilters} filter${activeFilters > 1 ? 's' : ''} active` : '');
+    (active ? ` &middot; ${active} filter${active > 1 ? 's' : ''} active` : '');
 
   document.getElementById('resultsList').innerHTML = places.map((p, i) => {
-    const features = p.features || {};
-    const food = features.food_and_drink || {};
-    const services = features.services || {};
+    const feat = p.features || {};
+    const food = feat.food_and_drink || {};
+    const svc  = feat.services || {};
+    const am   = feat.amenities || {};
 
-    const features = p.features || {};
-    const food = features.food_and_drink || {};
-    const services = features.services || {};
-    const amenities = features.amenities || {};
-
+    // Build tags
     const tags = [];
-    // Open/closed — always show if we have hours data
-    if (isOpenNow(p))                          tags.push({ cls: 'tag-open',        text: '✅ Open now' });
-    else if (p.hours)                          tags.push({ cls: 'tag-closed',      text: '🔴 Closed' });
-    // Price
-    const price = priceLabel(p.price);
-    if (price)                                 tags.push({ cls: 'tag-price',       text: price });
-    // Food & drink
-    if (food.alcohol)                          tags.push({ cls: 'tag-alcohol',     text: '🍷 Alcohol' });
-    if (food.bar)                              tags.push({ cls: 'tag-bar',         text: '🍺 Bar' });
-    if (food.menus?.has_vegan)                 tags.push({ cls: 'tag-vegan',       text: '🌱 Vegan' });
-    if (food.menus?.has_vegetarian)            tags.push({ cls: 'tag-vegetarian',  text: '🥦 Vegetarian' });
-    if (food.menus?.has_gluten_free)           tags.push({ cls: 'tag-gluten',      text: '🌾 Gluten-free' });
-    // Services
-    if (services.dine_in?.reservations)        tags.push({ cls: 'tag-reserve',     text: '📅 Reservations' });
-    if (services.delivery)                     tags.push({ cls: 'tag-delivery',    text: '🛵 Delivery' });
-    if (services.takeout)                      tags.push({ cls: 'tag-takeaway',    text: '🥡 Takeaway' });
-    // Amenities
-    if (amenities.outdoor_seating)             tags.push({ cls: 'tag-outdoor',     text: '🌿 Outdoor seating' });
-    if (amenities.wifi)                        tags.push({ cls: 'tag-wifi',        text: '📶 WiFi' });
-    if (amenities.parking?.parking_available)  tags.push({ cls: 'tag-parking',     text: '🅿️ Parking' });
-    if (amenities.live_music)                  tags.push({ cls: 'tag-live',        text: '🎵 Live music' });
+    if (isOpen(p))                       tags.push(['tag-open',       '✅ Open now']);
+    else if (p.hours)                    tags.push(['tag-closed',     '🔴 Closed']);
+    const pr = priceStr(p.price);
+    if (pr)                              tags.push(['tag-price',      pr]);
+    if (food.alcohol)                    tags.push(['tag-alcohol',    '🍷 Alcohol']);
+    if (food.bar)                        tags.push(['tag-bar',        '🍺 Bar']);
+    if (food.menus?.has_vegan)           tags.push(['tag-vegan',      '🌱 Vegan']);
+    if (food.menus?.has_vegetarian)      tags.push(['tag-vegetarian', '🥦 Vegetarian']);
+    if (food.menus?.has_gluten_free)     tags.push(['tag-gluten',     '🌾 Gluten-free']);
+    if (svc.dine_in?.reservations)       tags.push(['tag-reserve',    '📅 Reservations']);
+    if (svc.delivery)                    tags.push(['tag-delivery',   '🛵 Delivery']);
+    if (svc.takeout)                     tags.push(['tag-takeaway',   '🥡 Takeaway']);
+    if (am.outdoor_seating)              tags.push(['tag-outdoor',    '🌿 Outdoor']);
+    if (am.wifi)                         tags.push(['tag-wifi',       '📶 WiFi']);
+    if (am.parking?.parking_available)   tags.push(['tag-parking',    '🅿️ Parking']);
+    if (am.live_music)                   tags.push(['tag-live',       '🎵 Live music']);
 
-    const rating = p.rating;
-    const rClass = ratingClass(rating);
-    const ratingHTML = rating
-      ? `<span class="card-rating ${rClass}">★ ${rating.toFixed(1)}</span>`
+    const r = p.rating;
+    const ratingHTML = r
+      ? `<span class="card-rating ${ratingCls(r)}">★ ${r.toFixed(1)}</span>`
       : `<span class="card-rating none">No rating</span>`;
 
-    const category = getCategoryName(p);
-    const address = formatAddress(p.location);
-    const dist = formatDistance(p.distance);
+    const cat = p.categories?.[0]?.name || '';
+    const addr = fmtAddr(p.location);
 
-    const foursquareUrl = `https://foursquare.com/v/${p.fsq_id}`;
-
-    return `<a class="restaurant-card" href="${foursquareUrl}" target="_blank" rel="noopener">
+    return `<a class="restaurant-card" href="https://foursquare.com/v/${p.fsq_id}" target="_blank" rel="noopener">
       <div class="card-rank">${i + 1}</div>
       <div class="card-body">
         <div class="card-top">
@@ -838,24 +605,23 @@ function renderResults(places) {
           ${ratingHTML}
         </div>
         <div class="card-meta">
-          ${category ? `<span>${category}</span>` : ''}
-          ${category && address ? '<span class="sep">·</span>' : ''}
-          ${address ? `<span>${address}</span>` : ''}
+          ${cat ? `<span>${cat}</span>` : ''}
+          ${cat && addr ? '<span class="sep">·</span>' : ''}
+          ${addr ? `<span>${addr}</span>` : ''}
         </div>
-        ${tags.length ? `<div class="card-tags">${tags.map(t => `<span class="tag ${t.cls}">${t.text}</span>`).join('')}</div>` : ''}
+        ${tags.length ? `<div class="card-tags">${tags.map(([cls, txt]) => `<span class="tag ${cls}">${txt}</span>`).join('')}</div>` : ''}
       </div>
-      <div class="card-dist">${dist}</div>
+      <div class="card-dist">${fmtDist(p.distance)}</div>
     </a>`;
   }).join('');
 }
 
-// ─── UI STATE ─────────────────────────────────────────────────
+// ── UI STATE ──────────────────────────────────────────────────
 function setLoading(v) {
   document.getElementById('loading').classList.toggle('visible', v);
   document.getElementById('searchBtn').disabled = v;
   if (v) {
     document.getElementById('resultsArea').style.display = 'none';
-    document.getElementById('heroEmpty').style.display = 'none';
     document.getElementById('emptyState').classList.remove('visible');
   }
 }
@@ -864,7 +630,6 @@ function showError(msg) {
   const el = document.getElementById('errorMsg');
   el.textContent = msg;
   el.classList.add('visible');
-  setLoading(false);
 }
 
 function clearError() {
