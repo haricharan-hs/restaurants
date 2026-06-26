@@ -438,7 +438,11 @@ async function doSearchWithCoords(lat, lng, label) {
 
   try {
     const res = await fetch(`https://api.foursquare.com/v3/places/search?${params}`, {
-      headers: { 'Authorization': FSQ_KEY, 'Accept': 'application/json' }
+      headers: {
+        'Authorization': FSQ_KEY,
+        'Accept': 'application/json',
+        'X-Places-Api-Version': '2023-10-01'
+      }
     });
 
     if (res.status === 401) { showError('Invalid Foursquare API key.'); setLoading(false); return; }
