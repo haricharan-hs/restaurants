@@ -172,7 +172,7 @@
 
 <header>
   <h1>NZ <em>Eats</em></h1>
-  <p>Find restaurants anywhere in Aotearoa</p>
+  <p>Find restaurants anywhere in Aotearoa · Data © <a href="https://www.openstreetmap.org/copyright" style="color:#a09080" target="_blank">OpenStreetMap</a> contributors</p>
 </header>
 
 <div class="search-panel">
@@ -203,27 +203,26 @@
       <label>Cuisine</label>
       <select id="cuisineSelect">
         <option value="">Any cuisine</option>
-        <option value="13065">🍽️ Restaurant</option>
-        <option value="13064">☕ Café</option>
-        <option value="13145">🍣 Japanese / Sushi</option>
-        <option value="13236">🍕 Pizza</option>
-        <option value="13099">🍔 Burgers</option>
-        <option value="13132">🌮 Mexican</option>
-        <option value="13072">🍜 Chinese</option>
-        <option value="13199">🫕 Indian</option>
-        <option value="13276">🍱 Thai</option>
-        <option value="13114">🥙 Middle Eastern</option>
-        <option value="13049">🥩 Steakhouse</option>
-        <option value="13084">🐟 Seafood</option>
-        <option value="13025">🍺 Bar / Pub</option>
-        <option value="13032">🍳 Brunch</option>
+        <option value="restaurant">🍽️ Restaurant</option>
+        <option value="cafe">☕ Café</option>
+        <option value="japanese;sushi">🍣 Japanese / Sushi</option>
+        <option value="pizza">🍕 Pizza</option>
+        <option value="burger">🍔 Burgers</option>
+        <option value="mexican">🌮 Mexican</option>
+        <option value="chinese">🍜 Chinese</option>
+        <option value="indian">🫕 Indian</option>
+        <option value="thai">🍱 Thai</option>
+        <option value="middle_eastern">🥙 Middle Eastern</option>
+        <option value="steak_house">🥩 Steakhouse</option>
+        <option value="seafood">🐟 Seafood</option>
+        <option value="bar;pub">🍺 Bar / Pub</option>
+        <option value="breakfast;brunch">🍳 Brunch</option>
       </select>
     </div>
     <div class="field field-sort">
       <label>Sort by</label>
       <select id="sortSelect" onchange="applyFiltersAndSort()">
         <option value="distance">Nearest first</option>
-        <option value="rating">Highest rated</option>
         <option value="name">A → Z</option>
       </select>
     </div>
@@ -283,7 +282,7 @@
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────
-const FSQ_KEY = 'fsq31vTID5N1sD03H2oih6KwSQn4Yac/Zz9Kjsm0YzfwDhs=';
+// No API key needed — uses OpenStreetMap Overpass API (free, open)
 
 let allResults = [];
 let suggestTimer = null;
@@ -418,7 +417,7 @@ function useGPS() {
   );
 }
 
-// ── FOURSQUARE ────────────────────────────────────────────────
+// ── OVERPASS API (OpenStreetMap) ──────────────────────────────
 async function doSearchWithCoords(lat, lng, label) {
   setLoading(true);
   clearError();
@@ -427,32 +426,119 @@ async function doSearchWithCoords(lat, lng, label) {
   const radius = document.getElementById('radiusSelect').value;
   const cuisine = document.getElementById('cuisineSelect').value;
 
-  const params = new URLSearchParams({
-    ll: `${lat},${lng}`,
-    radius,
-    limit: 50,
-    sort: 'DISTANCE',
-    categories: cuisine || '13065,13032,13025,13064',
-    fields: 'fsq_id,name,location,distance,rating,price,hours,features,categories'
-  });
+  // Build Overpass query
+  // amenity types to search: restaurant, cafe, bar, pub, fast_food, food_court, biergarten
+  const amenityTypes = ['restaurant', 'cafe', 'bar', 'pub', 'fast_food', 'food_court', 'biergarten'];
+  const cuisineTags = cuisine ? cuisine.split(';') : [];
+
+  let nodeQueries = '';
+  let wayQueries  = '';
+
+  if (cuisineTags.length) {
+    // Filter by cuisine tag — search restaurants/cafes/bars with that cuisine
+    for (const ct of cuisineTags) {
+      const c = ct.trim();
+      nodeQueries += `node["amenity"~"restaurant|cafe|bar|pub|fast_food"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});\n`;
+      wayQueries  += `way["amenity"~"restaurant|cafe|bar|pub|fast_food"]["cuisine"~"${c}",i](around:${radius},${lat},${lng});\n`;
+      // Also handle amenity=bar for bar/pub option
+      if (c === 'bar' || c === 'pub') {
+        nodeQueries += `node["amenity"~"bar|pub"](around:${radius},${lat},${lng});\n`;
+        wayQueries  += `way["amenity"~"bar|pub"](around:${radius},${lat},${lng});\n`;
+      }
+      if (c === 'cafe') {
+        nodeQueries += `node["amenity"="cafe"](around:${radius},${lat},${lng});\n`;
+        wayQueries  += `way["amenity"="cafe"](around:${radius},${lat},${lng});\n`;
+      }
+    }
+  } else {
+    // All food/drink amenities
+    const amenityFilter = amenityTypes.join('|');
+    nodeQueries = `node["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\n`;
+    wayQueries  = `way["amenity"~"${amenityFilter}"](around:${radius},${lat},${lng});\n`;
+  }
+
+  const query = `
+[out:json][timeout:25];
+(
+${nodeQueries}${wayQueries}
+);
+out body center 50;
+`;
 
   try {
-    const res = await fetch(`https://api.foursquare.com/v3/places/search?${params}`, {
-      headers: {
-        'Authorization': FSQ_KEY,
-        'Accept': 'application/json',
-        'X-Places-Api-Version': '2023-10-01'
-      }
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query
     });
 
-    if (res.status === 401) { showError('Invalid Foursquare API key.'); setLoading(false); return; }
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `Foursquare error ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`Overpass error ${res.status}`);
 
     const data = await res.json();
-    allResults = data.results || [];
+    const elements = data.elements || [];
+
+    // Convert OSM elements to a normalised format
+    allResults = elements
+      .filter(el => el.tags && el.tags.name)
+      .map(el => {
+        const tags = el.tags;
+        const elLat = el.lat ?? el.center?.lat;
+        const elLng = el.lon ?? el.center?.lon;
+        const dist = elLat != null ? haversine(lat, lng, elLat, elLng) : null;
+
+        // Opening hours: OSM stores as a raw string; we parse "open now" heuristically
+        const openNow = guessOpenNow(tags.opening_hours);
+
+        // Price: map OSM fee/price_range or stars to 1–4
+        const price = osmPrice(tags);
+
+        // Features derived from tags
+        const features = {
+          food_and_drink: {
+            alcohol:  !!(tags.alcohol || tags['drink:alcohol'] || tags.amenity === 'bar' || tags.amenity === 'pub'),
+            bar:      !!(tags.amenity === 'bar' || tags.amenity === 'pub'),
+            menus: {
+              has_vegan:      tags.diet_vegan === 'yes' || tags['diet:vegan'] === 'yes',
+              has_vegetarian: tags['diet:vegetarian'] === 'yes' || tags.diet_vegetarian === 'yes',
+              has_gluten_free:tags['diet:gluten_free'] === 'yes',
+            }
+          },
+          services: {
+            delivery:  tags.delivery === 'yes',
+            takeout:   tags.takeaway === 'yes' || tags.takeout === 'yes',
+            dine_in:   { reservations: tags.reservation === 'yes' || tags.reservations === 'yes' }
+          },
+          amenities: {
+            outdoor_seating:  tags.outdoor_seating === 'yes',
+            wifi:             tags.internet_access === 'wlan' || tags.wifi === 'yes',
+            live_music:       tags.live_music === 'yes',
+            parking:          { parking_available: !!(tags.parking || tags['parking:fee'] || tags['capacity:parking']) }
+          }
+        };
+
+        const cuisine = tags.cuisine ? tags.cuisine.replace(/_/g,' ').replace(/;/g, ', ') : '';
+        const category = amenityLabel(tags.amenity);
+
+        return {
+          osm_id:   el.id,
+          osm_type: el.type,
+          name:     tags.name,
+          location: {
+            address:  tags['addr:street'] ? `${tags['addr:housenumber'] || ''} ${tags['addr:street']}`.trim() : '',
+            locality: tags['addr:city'] || tags['addr:suburb'] || tags['addr:town'] || ''
+          },
+          distance: dist ? Math.round(dist) : null,
+          rating:   null,  // OSM doesn't have ratings
+          price,
+          hours:    { open_now: openNow, raw: tags.opening_hours || null },
+          features,
+          categories: cuisine
+            ? [{ name: cuisine }]
+            : category ? [{ name: category }] : [],
+          website:  tags.website || tags['contact:website'] || null,
+          phone:    tags.phone || tags['contact:phone'] || null,
+        };
+      })
+      .sort((a, b) => (a.distance || 99999) - (b.distance || 99999));
 
     if (!allResults.length) {
       showEmpty();
@@ -463,6 +549,66 @@ async function doSearchWithCoords(lat, lng, label) {
     showError(`Could not load restaurants: ${e.message}`);
   }
   setLoading(false);
+}
+
+// ── OSM HELPERS ───────────────────────────────────────────────
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function amenityLabel(a) {
+  return { restaurant:'Restaurant', cafe:'Café', bar:'Bar', pub:'Pub',
+           fast_food:'Fast Food', food_court:'Food Court', biergarten:'Beer Garden' }[a] || '';
+}
+
+function osmPrice(tags) {
+  // OSM price_range: $, $$, $$$, $$$$
+  const pr = tags.price_range || tags['price:range'] || '';
+  if (pr) return Math.min(4, pr.replace(/[^$]/g,'').length) || null;
+  const stars = parseInt(tags.stars || '0');
+  if (stars >= 4) return 4;
+  if (stars === 3) return 3;
+  if (stars === 2) return 2;
+  if (stars === 1) return 1;
+  return null;
+}
+
+function guessOpenNow(ohStr) {
+  if (!ohStr) return null;
+  if (ohStr.trim().toLowerCase() === '24/7') return true;
+  // Basic parsing: only handle simple "Mo-Su HH:MM-HH:MM" patterns
+  try {
+    const now = new Date();
+    const dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const todayAbbr = dayNames[now.getDay()];
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+
+    // Match patterns like "Mo-Fr 09:00-22:00" or "Mo-Su 08:00-21:00"
+    const rangePattern = /([A-Z][a-z])(?:-([A-Z][a-z]))?\s+(\d{2}):(\d{2})-(\d{2}):(\d{2})/g;
+    let match;
+    let found = false;
+    while ((match = rangePattern.exec(ohStr)) !== null) {
+      const [, startDay, endDay, sh, sm, eh, em] = match;
+      const startIdx = dayNames.indexOf(startDay);
+      const endIdx   = endDay ? dayNames.indexOf(endDay) : startIdx;
+      const todayIdx = dayNames.indexOf(todayAbbr);
+      const inDay = startIdx <= endIdx
+        ? todayIdx >= startIdx && todayIdx <= endIdx
+        : todayIdx >= startIdx || todayIdx <= endIdx;
+      if (inDay) {
+        found = true;
+        const open  = parseInt(sh)*60 + parseInt(sm);
+        const close = parseInt(eh)*60 + parseInt(em);
+        if (currentMins >= open && currentMins < close) return true;
+      }
+    }
+    if (found) return false;
+    return null; // can't determine
+  } catch(e) { return null; }
 }
 
 // ── FILTERS ───────────────────────────────────────────────────
@@ -596,12 +742,17 @@ function renderResults(places) {
     const r = p.rating;
     const ratingHTML = r
       ? `<span class="card-rating ${ratingCls(r)}">★ ${r.toFixed(1)}</span>`
-      : `<span class="card-rating none">No rating</span>`;
+      : p.hours?.open_now === true
+        ? `<span class="card-rating high" style="background:var(--good)">✅ Open</span>`
+        : p.hours?.open_now === false
+          ? `<span class="card-rating low" style="background:var(--muted)">Closed</span>`
+          : `<span class="card-rating none"></span>`;
 
     const cat = p.categories?.[0]?.name || '';
     const addr = fmtAddr(p.location);
 
-    return `<a class="restaurant-card" href="https://foursquare.com/v/${p.fsq_id}" target="_blank" rel="noopener">
+    const osmUrl = p.website || `https://www.openstreetmap.org/${p.osm_type}/${p.osm_id}`;
+    return `<a class="restaurant-card" href="${osmUrl}" target="_blank" rel="noopener">
       <div class="card-rank">${i + 1}</div>
       <div class="card-body">
         <div class="card-top">
